@@ -61,6 +61,15 @@ const char* PASSWORD = "luwa2131";
 #define PRE_FLIGHT_LED 4
 int counter = 0;
 
+// divisor factors based on full scale ranges
+#define ACCEL_FACTOR_2G       16384      
+#define ACCEL_FACTOR_4G       8192    
+#define ACCEL_FACTOR_8G       4096
+#define ACCEL_FACTOR_16G      2048
+#define GYRO_FACTOR_250       131
+#define GYRO_FACTOR_500       65.5
+#define GYRO_FACTOR_1000      32.8
+#define GYRO_FACTOR_2000      16.4
 
 // MPU6050 addresses definitions 
 #define MPU6050_ADDRESS         0x68
@@ -68,8 +77,14 @@ int counter = 0;
 #define ACCEL_CONFIG            0x1C
 #define PWR_MNGMT_1             0x6B
 #define RESET                   0x00
-#define SET_GYRO_FS_1000        0x10
+#define SET_GYRO_FS_250         0x00
+#define SET_GYRO_FS_500         0x01
+#define SET_GYRO_FS_1000        0x02
+#define SET_GYRO_FS_2000        0x18
 #define SET_ACCEL_FS_2G         0x00
+#define SET_ACCEL_FS_4G         0x01
+#define SET_ACCEL_FS_8G         0x02
+#define SET_ACCEL_FS_16G        0x18
 #define ACCEL_XOUT_H            0x3B
 #define ACCEL_XOUT_L            0x3C
 #define ACCEL_YOUT_H            0x3D

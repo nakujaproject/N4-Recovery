@@ -66,6 +66,62 @@ unsigned long TTA = 10000;
 unsigned long timer_offset = 0;
 bool offset_flag = true;
 
+/**
+ * ================================ DATA VARIABLES ===========================
+*/
+
+typedef struct Acceleration_Data{
+    double ax;
+    double ay; 
+    double az;
+} accel_type_t;
+
+typedef struct Gyroscope_Data {
+    double gx;
+    double gy;
+    double gz;
+} gyro_type_t;
+
+typedef struct GPS_Data{
+    double latitude;
+    double longitude;; 
+    uint time;
+} gps_type_t;
+
+typedef struct Altimeter_Data{
+    int32_t pressure;
+    double altitude;
+    double velocity;
+    double AGL; /* altitude above ground level */
+} altimeter_type_t;
+
+typedef struct Telemetry_Data {
+    float ax;
+    float ay; 
+    float az;
+    float gx;
+    float gy; 
+    float gz;
+    int32_t pressure;
+    float altitude;
+    float velocity;
+    float AGL; /* altitude above ground level */
+    double latitude;
+    double longitude;; 
+    uint time;
+} telemetry_type_t;
+
+accel_type_t acc_data;
+gyro_type_t gyro_data;
+gps_type_t gps_data;
+altimeter_type_t altimeter_data;
+telemetry_type_t telemetry_data;
+
+/**
+ * ================================ END OF DATA VARIABLES ===========================
+*/
+
+
 /* functions to initialize sensors */
 void initialize_gyroscope(){
     /* attempt to initialize MPU6050 */
@@ -104,7 +160,11 @@ void initialize_altimeter(){
  * set max G to 16
  * set gyro to max deg to 500 deg/sec
 */
-void MPU6050_Init() {
+void MPU6050_Init(uint32_t ACCEL_FULL_SCALE_RANGE, uint32_t GYRO_FULL_SCALE_RANGE) {
+
+    // check that the passed parameters are not 0
+    assert(ACCEL_FULL_SCALE_RANGE != 0);
+    assert(GYRO_FULL_SCALE_RANGE != 0);
 
     // initialize the MPU6050 
     Wire.begin();
@@ -117,15 +177,31 @@ void MPU6050_Init() {
     // configure the gyroscope
     Wire.beginTransmission(MPU6050_ADDRESS);
     Wire.begin(GYRO_CONFIG);
-    Wire.write(SET_GYRO_FS_1000);
+    if(GYRO_FULL_SCALE_RANGE == 250) {
+        Wire.write(SET_GYRO_FS_250);
+    } else if(GYRO_FULL_SCALE_RANGE == 500) {
+        Wire.write(SET_GYRO_FS_500);
+    } else if (GYRO_FULL_SCALE_RANGE == 1000) {
+        Wire.write(SET_GYRO_FS_1000);
+    } else if (GYRO_FULL_SCALE_RANGE == 2000) {
+        Wire.write(SET_GYRO_FS_2000);
+    }
     Wire.endTransmission(true);
 
     /// configure the accelerometer 
     Wire.beginTransmission(MPU6050_ADDRESS);
     Wire.write(ACCEL_CONFIG);
-    Wire.write(SET_ACCEL_FS_2G);
-    Wire.endTransmission(true);
 
+    if(ACCEL_FULL_SCALE_RANGE == 2) {
+        Wire.write(SET_ACCEL_FS_2G);
+    } else if (ACCEL_FULL_SCALE_RANGE == 4) {
+         Wire.write(SET_ACCEL_FS_4G);
+    }  else if (ACCEL_FULL_SCALE_RANGE == 8) {
+         Wire.write(SET_ACCEL_FS_8G);
+    }  else if (ACCEL_FULL_SCALE_RANGE == 16) {
+         Wire.write(SET_ACCEL_FS_16G);
+    }
+    Wire.endTransmission(true);
 }
 
 /**
@@ -138,9 +214,13 @@ void MPU_Read_Accel () {
     Wire.endTransmission(true);
 
     Wire.requestFrom(MPU6050_ADDRESS, 6, false);
+    acc_data.ax = Wire.read()<<8 | Wire.read();
+    acc_data.ax = Wire.read()<<8 | Wire.read();
+    acc_data.ax = Wire.read()<<8 | Wire.read();
     
 
 }
+
 
 void MPU_Read_Gyro() {
 
@@ -150,46 +230,8 @@ void MPU_Read_Temp() {
 
 }
 
-/* data variables */
-/* gyroscope data */
+// create data types to hold the sensor data 
 
-typedef struct Acceleration_Data{
-    double ax;
-    double ay; 
-    double az;
-    double gx;
-    double gy;
-    double gz;
-} accel_data;
-
-typedef struct GPS_Data{
-    double latitude;
-    double longitude;; 
-    uint time;
-} gps_data;
-
-typedef struct Altimeter_Data{
-    int32_t pressure;
-    double altitude;
-    double velocity;
-    double AGL; /* altitude above ground level */
-} altimeter_data;
-
-typedef struct Telemetry_Data {
-    float ax;
-    float ay; 
-    float az;
-    float gx;
-    float gy; 
-    float gz;
-    int32_t pressure;
-    float altitude;
-    float velocity;
-    float AGL; /* altitude above ground level */
-    double latitude;
-    double longitude;; 
-    uint time;
-} telemetry_data;
 
 /* create queue to store altimeter data
  * store pressure and altitude
