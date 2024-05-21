@@ -99,32 +99,83 @@ void initialize_altimeter(){
     debugln("[+]Altimeter initialized");
 }
 
+/**
+ * Initialize the MPU6050
+ * set max G to 16
+ * set gyro to max deg to 500 deg/sec
+*/
+void MPU6050_Init() {
+
+    // initialize the MPU6050 
+    Wire.begin();
+    Wire.beginTransmission(MPU6050_ADDRESS);
+    Wire.write(PWR_MNGMT_1); // power on the device 
+    Wire.write(RESET);
+    Wire.endTransmission(true);
+    delay(50);
+
+    // configure the gyroscope
+    Wire.beginTransmission(MPU6050_ADDRESS);
+    Wire.begin(GYRO_CONFIG);
+    Wire.write(SET_GYRO_FS_1000);
+    Wire.endTransmission(true);
+
+    /// configure the accelerometer 
+    Wire.beginTransmission(MPU6050_ADDRESS);
+    Wire.write(ACCEL_CONFIG);
+    Wire.write(SET_ACCEL_FS_2G);
+    Wire.endTransmission(true);
+
+}
+
+/**
+ * Read accelerometer values from the MPU6050
+*/
+void MPU_Read_Accel () {
+    // I2C handles 8-bit, so read and shift
+    Wire.beginTransmission(MPU6050_ADDRESS);
+    Wire.write(ACCEL_XOUT_H);
+    Wire.endTransmission(true);
+
+    Wire.requestFrom(MPU6050_ADDRESS, 6, false);
+    
+
+}
+
+void MPU_Read_Gyro() {
+
+}
+
+void MPU_Read_Temp() {
+
+}
+
 /* data variables */
 /* gyroscope data */
 
-struct Acceleration_Data{
+typedef struct Acceleration_Data{
     double ax;
     double ay; 
     double az;
     double gx;
     double gy;
     double gz;
-};
+} accel_data;
 
-struct GPS_Data{
+typedef struct GPS_Data{
     double latitude;
     double longitude;; 
     uint time;
-};
+} gps_data;
 
-struct Altimeter_Data{
+typedef struct Altimeter_Data{
     int32_t pressure;
     double altitude;
     double velocity;
     double AGL; /* altitude above ground level */
-};
+} altimeter_data;
 
-struct Telemetry_Data{
+typedef struct Telemetry_Data {
     float ax;
     float ay; 
     float az;
@@ -138,7 +189,7 @@ struct Telemetry_Data{
     double latitude;
     double longitude;; 
     uint time;
-};
+} telemetry_data;
 
 /* create queue to store altimeter data
  * store pressure and altitude
