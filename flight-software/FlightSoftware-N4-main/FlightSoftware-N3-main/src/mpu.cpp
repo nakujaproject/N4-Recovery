@@ -143,7 +143,7 @@ float MPU6050::getRoll() {
 }
 
 /**
- * compute the roll angle 
+ * compute the roll angle
  * angle along the longitudinal axis
  * return pitch angle in degrees
 */
@@ -155,6 +155,34 @@ float MPU6050::getPitch() {
     this->pitch_angle = asin(this->acc_x_ms/ONE_G);
 
     return this->pitch_angle * TO_DEG_FACTOR;
+}
+
+/**
+ * Perform sensor callibration to compensate for errors
+ * 
+*/
+bool MPU6050::callibrateSensor() {
+    // get a predefined number of reading defined in the test system
+    for (uint8_t i=0; i<CALLIBRATION_READINGS; i++) {
+        // check the error on the X axis 
+        
+        this->err_acc_x = this->readXAcceleration();
+
+        this->summed_err_val += this->err_acc_x;
+
+    }
+
+    // get the average of the total readings
+
 
 }
 
+/**
+ * perfom complementary filter to remove accelerometer high frequrecny noise 
+ * remove low frequency noise from gyroscope and fuse the sensors 
+*/
+void MPU6050::filterImu() {
+    // complementary filter formula 
+    // return this value as the final correct value from the IMU
+
+}

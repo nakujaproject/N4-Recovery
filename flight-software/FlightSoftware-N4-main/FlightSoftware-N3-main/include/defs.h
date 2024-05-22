@@ -60,6 +60,9 @@
 /* LEDs for testing - remove on production */
 #define PRE_FLIGHT_LED 4
 
+// number of readings to take while callibrating the sensor
+#define CALLIBRATION_READINGS   200
+
 
 #endif
 #define TX 17
