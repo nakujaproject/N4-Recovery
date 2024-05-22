@@ -4,6 +4,7 @@
 
 #include "Arduino.h"
 #include <Wire.h>
+#include <math.h>
 #include "defs.h"
 
 
@@ -45,6 +46,7 @@
 #define GYRO_ZOUT_L             0x48
 #define TEMP_OUT_H              0x41
 #define TEMP_OUT_L              0x42
+#define ONE_G                   9.81
 
 class MPU6050 {
     private:
@@ -61,6 +63,9 @@ class MPU6050 {
     int16_t temp;
     float temp_real;
 
+    float pitch_angle, roll_angle;
+    float acc_x_ms, acc_y_ms, acc_z_ms; // acceleration in m/s^2
+
     MPU6050(uint8_t address, uint32_t accel_fs_range, uint32_t gyro_fs_range);
     void init();
     float readXAcceleration();
@@ -70,6 +75,10 @@ class MPU6050 {
     float readYAngularVelocity();
     float readZAngularVelocity();
     float readTemperature();
+
+    // orientation calculation
+    float getRoll();
+    float getPitch();
 
 };
 

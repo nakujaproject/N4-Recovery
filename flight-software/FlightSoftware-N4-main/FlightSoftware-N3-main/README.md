@@ -8,3 +8,7 @@ packages:
 ```c
 $ pio pkg update
 ```
+
+### References and Error fixes
+
+1. (Wire LIbrary Device Lock) [Confusing overload of `Wire::begin` · Issue #6616 · espressif/arduino-esp32 · GitHub](https://github.com/espressif/arduino-esp32/issues/6616)

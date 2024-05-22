@@ -150,7 +150,7 @@ void readAccelerationTask(void* pvParameter) {
 
     while(1) {
         acc_data.ax = imu.readXAcceleration();
-        acc_data.ay = 0;
+        acc_data.ay = imu.readYAcceleration();
         acc_data.az = 0;
         xQueueSend(accel_data_qHandle, &acc_data, portMAX_DELAY);
 
