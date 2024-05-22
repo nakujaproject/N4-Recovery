@@ -157,6 +157,21 @@ void readAccelerationTask(void* pvParameter) {
     }
 }
 
+/**
+ * Task to calulate the orientation of the rocket in terms of the 
+ * roll and pitch angles 
+*/
+void calculateOrientationTask(void* pvParameter) {
+    
+    while (1) {
+        float pitch = imu.getPitch();
+        float roll = imu.getRoll();
+
+        debug("Pitch: "); debug(pitch);debug(" Roll: "); debug(roll); debugln();
+    }
+    
+}
+
 // void readAltimeter(void* pvParameters){
 
 //     while(true){
@@ -557,21 +572,32 @@ void setup(){
     // }
 
     /* TASK 3: DISPLAY DATA ON SERIAL MONITOR - FOR DEBUGGING */
-    th = xTaskCreatePinnedToCore(
-            debugToTerminal,
-            "displayData",
-            STACK_SIZE,
-            NULL,
-            1,
-            NULL,
-            app_id
-            );
+    // th = xTaskCreatePinnedToCore(
+    //         debugToTerminal,
+    //         "displayData",
+    //         STACK_SIZE,
+    //         NULL,
+    //         1,
+    //         NULL,
+    //         app_id
+    //         );
         
-    if(th == pdPASS) {
-        Serial.println("Task created");
-    } else {
-        Serial.println("Task not created");
-    }
+    // if(th == pdPASS) {
+    //     Serial.println("Task created");
+    // } else {
+    //     Serial.println("Task not created");
+    // }
+
+    /* task to calculate rocket orientation */
+    th = xTaskCreatePinnedToCore(
+        calculateOrientationTask,
+        "calcOrientation",
+        STACK_SIZE,
+        NULL,
+        1,
+        NULL,
+        app_id
+    );
 
     /* TASK 4: TRANSMIT TELEMETRY DATA */
     // if(xTaskCreate(

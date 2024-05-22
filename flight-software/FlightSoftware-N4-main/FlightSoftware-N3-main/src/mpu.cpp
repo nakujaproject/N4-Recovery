@@ -129,29 +129,32 @@ float MPU6050::readZAcceleration() {
 /**
  * compute the pitch angle
  * angle along the transverse axis 
+ * return roll angle in degrees
 */
 float MPU6050::getRoll() {
     // convert the imu readings to m/s^2
-    this->acc_x_ms = this->acc_x_real * ONE_G;
-    this->acc_y_ms = this->acc_y_real * ONE_G;
+    this->acc_y_ms = this->readYAcceleration() * ONE_G;
+    this->acc_z_ms = this->readZAcceleration() * ONE_G;
 
     this->roll_angle = atan2(this->acc_y_ms, this->acc_z_ms);
 
-    return this->roll_angle;    
+    return this->roll_angle * TO_DEG_FACTOR;    
 
 }
 
 /**
  * compute the roll angle 
  * angle along the longitudinal axis
+ * return pitch angle in degrees
 */
 float MPU6050::getPitch() {
 
     // convert the imu readings to m/s^2
-    this->acc_x_ms = this->acc_x_real * ONE_G;
+    this->acc_x_ms = this->readXAcceleration() * ONE_G;
 
     this->pitch_angle = asin(this->acc_x_ms/ONE_G);
 
-    return this->pitch_angle;
+    return this->pitch_angle * TO_DEG_FACTOR;
 
 }
+

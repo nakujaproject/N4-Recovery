@@ -47,6 +47,7 @@
 #define TEMP_OUT_H              0x41
 #define TEMP_OUT_L              0x42
 #define ONE_G                   9.81
+#define TO_DEG_FACTOR           57.32
 
 class MPU6050 {
     private:
