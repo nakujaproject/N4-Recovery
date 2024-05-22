@@ -240,10 +240,8 @@ void debugToTerminal(void* pvParameters){
     accel_type_t rcvd_accel; // accelration received from acceleration_queue
 
     while(true){
-        Serial.println("--------------accel----------------");
-        
         if(xQueueReceive(accel_data_qHandle, &rcvd_accel, portMAX_DELAY) == pdPASS){
-            debugln("--------------accel----------------");
+            // debugln("--------------accel----------------");
             debug("x: "); debug(rcvd_accel.ax); debug(" y: "); debug(rcvd_accel.ay); debug(" z: "); debug(rcvd_accel.az); debugln();
             // debug("roll: "); debug(gyroscope_buffer.gx); debugln();
             // debug("pitch: "); debug(gyroscope_buffer.gy); debugln();
@@ -441,8 +439,7 @@ void setup(){
     // connectToWifi();
 
     //====================== init sensors ==========================
-    // imu.init();
-    Serial.println(imu._address, HEX);
+    imu.init();
 
     //==============================================================
     ;

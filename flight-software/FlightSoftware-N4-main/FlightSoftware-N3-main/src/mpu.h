@@ -54,13 +54,12 @@ class MPU6050 {
     
     public:
     // sensor data
-    float acc_x;
-    float acc_y;
-    float acc_z;
-    float ang_vel_x;
-    float ang_vel_y;
-    float ang_vel_z;
-    float temp;
+    int16_t acc_x, acc_y, acc_z; // raw acceleration values  
+    float acc_x_real, acc_y_real, acc_z_real; // converted aceleration values 
+    int16_t ang_vel_x, ang_vel_y, ang_vel_z;
+    float ang_vel_x_real, ang_vel_y_real, ang_vel_z_real; // converted angular velocity values 
+    int16_t temp;
+    float temp_real;
 
     MPU6050(uint8_t address, uint32_t accel_fs_range, uint32_t gyro_fs_range);
     void init();

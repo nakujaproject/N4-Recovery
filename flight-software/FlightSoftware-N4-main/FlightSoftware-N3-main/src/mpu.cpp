@@ -11,7 +11,7 @@ MPU6050::MPU6050(uint8_t address, uint32_t accel_fs_range, uint32_t gyro_fs_rang
 // initialize the MPU6050 
 void MPU6050::init() {
     // initialize the MPU6050 
-    Wire.begin();
+    Wire.begin(static_cast<int>(SDA), static_cast<int>(SCL));
     Wire.beginTransmission(this->_address);
     Wire.write(PWR_MNGMT_1); // power on the device 
     Wire.write(RESET);
@@ -32,20 +32,20 @@ void MPU6050::init() {
     // }
     // Wire.endTransmission(true);
 
-    // // configure the accelerometer
-    // Wire.beginTransmission(this->_address);
-    // Wire.write(ACCEL_CONFIG);
+    // configure the accelerometer
+    Wire.beginTransmission(this->_address);
+    Wire.write(ACCEL_CONFIG);
 
-    // if(this->_accel_fs_range == 2) {
-    //     Wire.write(SET_ACCEL_FS_2G);
-    // } else if (this->_accel_fs_range == 4) {
-    //      Wire.write(SET_ACCEL_FS_4G);
-    // }  else if (this->_accel_fs_range== 8) {
-    //      Wire.write(SET_ACCEL_FS_8G);
-    // }  else if (this->_accel_fs_range == 16) {
-    //      Wire.write(SET_ACCEL_FS_16G);
-    // }
-    // Wire.endTransmission(true);
+    if(this->_accel_fs_range == 2) {
+        Wire.write(SET_ACCEL_FS_2G);
+    } else if (this->_accel_fs_range == 4) {
+         Wire.write(SET_ACCEL_FS_4G);
+    }  else if (this->_accel_fs_range== 8) {
+         Wire.write(SET_ACCEL_FS_8G);
+    }  else if (this->_accel_fs_range == 16) {
+         Wire.write(SET_ACCEL_FS_16G);
+    }
+    Wire.endTransmission(true);
 }
 
 float MPU6050::readXAcceleration() {
@@ -58,15 +58,15 @@ float MPU6050::readXAcceleration() {
 
     // divide by the respective factors
     if(this->_accel_fs_range == 2) {
-        this->acc_x = acc_x / ACCEL_FACTOR_2G;
+        this->acc_x_real = (float) acc_x / ACCEL_FACTOR_2G;
     } else if(this->_accel_fs_range == 4) {
-        this->acc_x = acc_x / ACCEL_FACTOR_4G; 
+        this->acc_x_real = (float) acc_x / ACCEL_FACTOR_4G; 
     } else if(this->_accel_fs_range == 8) {
-        this->acc_x = acc_x / ACCEL_FACTOR_8G;
+        this->acc_x_real = (float) acc_x / ACCEL_FACTOR_8G;
     } else if(this->_accel_fs_range == 16) {
-        this->acc_x = acc_x / ACCEL_FACTOR_16G;
+        this->acc_x_real = (float) acc_x / ACCEL_FACTOR_16G;
     }
 
-    return this->acc_x;
+    return this->acc_x_real;
     
 }
