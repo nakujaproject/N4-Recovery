@@ -167,9 +167,9 @@ void calculateOrientationTask(void* pvParameter) {
         float pitch = imu.getPitch();
         float roll = imu.getRoll();
 
-        debug("Pitch: "); debug(pitch);debug(" Roll: "); debug(roll); debugln();
+        debug(pitch);debug(","); debug(roll); debugln();
     }
-    
+
 }
 
 // void readAltimeter(void* pvParameters){
