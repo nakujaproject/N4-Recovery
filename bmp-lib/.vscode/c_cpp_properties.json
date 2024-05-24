@@ -10,6 +10,8 @@
             "includePath": [
                 "d:/5th-year/project/N4-Recovery/bmp-lib/include",
                 "d:/5th-year/project/N4-Recovery/bmp-lib/src",
+                "d:/5th-year/project/N4-Recovery/bmp-lib/.pio/libdeps/esp32doit-devkit-v1/Sparkfun BMP180/src",
+                "C:/Users/USER/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                 "C:/Users/USER/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/newlib/platform_include",
                 "C:/Users/USER/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include",
                 "C:/Users/USER/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include/esp_additions/freertos",
@@ -232,7 +234,6 @@
                 "C:/Users/USER/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                 "C:/Users/USER/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                 "C:/Users/USER/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
-                "C:/Users/USER/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                 ""
             ],
             "browse": {
@@ -240,6 +241,8 @@
                 "path": [
                     "d:/5th-year/project/N4-Recovery/bmp-lib/include",
                     "d:/5th-year/project/N4-Recovery/bmp-lib/src",
+                    "d:/5th-year/project/N4-Recovery/bmp-lib/.pio/libdeps/esp32doit-devkit-v1/Sparkfun BMP180/src",
+                    "C:/Users/USER/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                     "C:/Users/USER/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/newlib/platform_include",
                     "C:/Users/USER/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include",
                     "C:/Users/USER/.platformio/packages/framework-arduinoespressif32/tools/sdk/esp32/include/freertos/include/esp_additions/freertos",
@@ -462,7 +465,6 @@
                     "C:/Users/USER/.platformio/packages/framework-arduinoespressif32/libraries/WiFi/src",
                     "C:/Users/USER/.platformio/packages/framework-arduinoespressif32/libraries/WiFiClientSecure/src",
                     "C:/Users/USER/.platformio/packages/framework-arduinoespressif32/libraries/WiFiProv/src",
-                    "C:/Users/USER/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src",
                     ""
                 ]
             },
