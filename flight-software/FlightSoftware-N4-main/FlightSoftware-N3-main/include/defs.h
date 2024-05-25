@@ -1,7 +1,7 @@
 #ifndef DEFS_H
 #define DEFS_H
 
-/* debug parameters for use during testing - disable before launch */
+/* debug parameters for use during testing - set to 0 for production */
 #define DEBUG 1
 
 #if DEBUG
@@ -43,8 +43,8 @@
 #define MQTT_PORT 1882
 
 /* WIFI credentials */
-const char* SSID = "Galaxy";
-const char* PASSWORD = "luwa2131";
+// const char* SSID = "Galaxy";
+// const char* PASSWORD = "luwa2131";
 
 /* ROCKET FLIGHT STATES */
 #define PRE_FLIGHT          0
@@ -59,7 +59,10 @@ const char* PASSWORD = "luwa2131";
 #define EJECTION_PIN 12
 /* LEDs for testing - remove on production */
 #define PRE_FLIGHT_LED 4
-int counter = 0;
+
+// number of readings to take while callibrating the sensor
+#define CALLIBRATION_READINGS   200
+
 
 #endif
 #define TX 17
