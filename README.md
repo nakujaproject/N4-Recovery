@@ -77,7 +77,7 @@ This calibration function is called in the setup function during peripherals ini
 
 
 
-### Filters 
+### Data Filtering 
 
 ---
 
