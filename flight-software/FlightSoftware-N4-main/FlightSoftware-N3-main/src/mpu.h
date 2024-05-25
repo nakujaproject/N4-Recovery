@@ -82,13 +82,10 @@ class MPU6050 {
     float readYAngularVelocity();
     float readZAngularVelocity();
     float readTemperature();
-
     // callibrate sensor
     bool callibrateSensor();
-
     // filter data values 
     void filterImu();
-
     // // orientation calculation
     float getRoll();
     float getPitch();

@@ -178,11 +178,26 @@ bool MPU6050::callibrateSensor() {
 }
 
 /**
+ * perform sensor fusion
  * perfom complementary filter to remove accelerometer high frequrecny noise 
  * remove low frequency noise from gyroscope and fuse the sensors 
 */
 void MPU6050::filterImu() {
     // complementary filter formula 
     // return this value as the final correct value from the IMU
+
+}
+
+float MPU6050::readTemperature() {
+    // write to temp register
+    Wire.beginTransmission(this->_address);
+    Wire.write(TEMP_OUT_H);
+    Wire.endTransmission(true);
+
+    Wire.requestFrom(this->_address, 2, false);
+    this->temp = Wire.read()<<8 | Wire.read();
+
+    // temperature conversion formula 
+    // temp = (TEMP_OUT_VALUE as a signed quantity)/340 +36.53
 
 }

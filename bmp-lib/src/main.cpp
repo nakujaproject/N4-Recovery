@@ -7,6 +7,14 @@ SFE_BMP180 altimeter;
 
 #define ALTITUDE 1525.0 // altitude of iPIC building, JKUAT, Juja.
 
+/**
+ * compute velocity based on offset from baseline altitude
+*/
+double calculateVelocity() {
+    // velocity = displacement / time 
+    // displacement = difference between the current_altitude and baseline altitude
+
+}
 
 /**
  * Initialize BMP
@@ -31,7 +39,7 @@ void setup() {
 
 void loop() {
     char status;
-    double T, P, p0, a;
+    double T, P, p0, a; // TODO: make these variables global 
 
     // If you want sea-level-compensated pressure, as used in weather reports,
     // you will need to know the altitude at which your measurements are taken.
