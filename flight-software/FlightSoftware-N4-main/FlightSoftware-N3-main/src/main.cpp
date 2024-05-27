@@ -10,6 +10,7 @@
 #include "defs.h"
 #include "state_machine.h"
 #include "mpu.h"
+#include <SFE_BMP180.h>
 
 /**
  * DEBUG 
@@ -37,7 +38,7 @@ long long current_time = 0;
 long long previous_time = 0;
 
 /**
- * ================================ DATA VARIABLES ===========================
+ * ///////////////////////// DATA VARIABLES /////////////////////////
 */
 
 
@@ -60,7 +61,7 @@ typedef struct GPS_Data{
 } gps_type_t;
 
 typedef struct Altimeter_Data{
-    int32_t pressure;
+    double pressure;
     double altitude;
     double velocity;
     double AGL; /* altitude above ground level */
@@ -89,13 +90,11 @@ altimeter_type_t altimeter_data;
 telemetry_type_t telemetry_data;
 
 /**
- * ================================ END OF DATA VARIABLES ===========================
+ * ///////////////////////// END OF DATA VARIABLES /////////////////////////
 */
 
 
-/**
- * ================================ PERIPHERALS INIT ===========================
- */
+///////////////////////// PERIPHERALS INIT /////////////////////////
 
 /**
  * create an MPU6050 object
@@ -104,8 +103,24 @@ telemetry_type_t telemetry_data;
 */
 MPU6050 imu(0x68, 16, 1000);
 
+// create BMP object 
+SFE_BMP180 altimeter;
+char status;
+double T, P, p0, a;
+#define ALTITUDE 1525.0 // altitude of iPIC building, JKUAT, Juja.
+
+// initialize the BMP180 altimeter
+void BMPInit() {
+    if(altimeter.begin()) {
+        Serial.println("BMP init success");
+        // TODO: update system table
+    } else {
+        Serial.println("BMP init failed");
+    }
+}
+
 /**
- * ================================ END OF PERIPHERALS INIT ===========================
+ * ///////////////////////// END OF PERIPHERALS INIT /////////////////////////
  */
 
 
@@ -116,6 +131,7 @@ MPU6050 imu(0x68, 16, 1000);
  * store pressure and altitude
  * */
 QueueHandle_t accel_data_qHandle;
+QueueHandle_t altimeter_data_qHandle;
 // QueueHandle_t gps_data_queue;
 // QueueHandle_t telemetry_data_queue; /* This queue will hold all the sensor data for transmission to ground station*/
 // QueueHandle_t filtered_data_queue;
@@ -172,52 +188,101 @@ void calculateOrientationTask(void* pvParameter) {
 
 }
 
-// void readAltimeter(void* pvParameters){
+///////////////////////// ALTITUDE AND VELOCITY DETERMINATION /////////////////////////
 
-//     while(true){
-//         /* Read pressure.
-//          * This is the pressure from the sea level.
-//          * */
-//         struct Altimeter_Data altimeter_data;
+void readAltimeter(void* pvParameters){
 
-//         /* Read pressure
-//          * This is the pressure from the sea level
-//          * */
-//         altimeter_data.pressure = altimeter.readSealevelPressure();
+    while(true){    
+        // If you want to measure altitude, and not pressure, you will instead need
+        // to provide a known baseline pressure. This is shown at the end of the sketch.
 
-//         /* Read altitude
-//          * This is the altitude from the sea level
-//          * */
-//         altimeter_data.altitude = altimeter.readAltitude(SEA_LEVEL_PRESSURE);
+        // You must first get a temperature measurement to perform a pressure reading.
+        
+        // Start a temperature measurement:
+        // If request is successful, the number of ms to wait is returned.
+        // If request is unsuccessful, 0 is returned.
+        status = altimeter.startTemperature();
+        if(status !=0 ) {
+            // wait for measurement to complete
+            delay(status);
 
-//         /* approximate velocity from acceleration by integration for apogee detection */
-//         current_time = millis();
+            // retrieve the completed temperature measurement 
+            // temperature is stored in variable T
 
-//         /* differentiate displacement to get velocity */
-//         new_y_displacement = altimeter_data.altitude - BASE_ALTITUDE;
-//         y_velocity = (new_y_displacement - old_y_displacement) / (current_time - previous_time);
+            status = altimeter.getTemperature(T);
+            if(status != 0) {
+                // print out the measurement 
+                Serial.print("temperature: ");
+                Serial.print(T, 2);
+                Serial.print(" \xB0 C, ");
 
-//         /* update integration variables */
-//         previous_time = current_time;
-//         old_y_displacement = new_y_displacement;
+                // start pressure measurement 
+                // The parameter is the oversampling setting, from 0 to 3 (highest res, longest wait).
+                // If request is successful, the number of ms to wait is returned.
+                // If request is unsuccessful, 0 is returned.
+                status = altimeter.startPressure(3);
+                if(status != 0) {
+                    // wait for the measurement to complete
+                    delay(status);
 
-//         /* ------------------------ END OF APOGEE DETECTION ALGORITHM ------------------------ */
+                    // Retrieve the completed pressure measurement:
+                    // Note that the measurement is stored in the variable P.
+                    // Note also that the function requires the previous temperature measurement (T).
+                    // (If temperature is stable, you can do one temperature measurement for a number of pressure measurements.)
+                    // Function returns 1 if successful, 0 if failure.
 
-//         /* subtract current altitude to get the maximum height reached */
-//         float rocket_height = altimeter_data.altitude - BASE_ALTITUDE;
+                    status = altimeter.getPressure(P, T);
+                    if(status != 0) {
+                        // print out the measurement
+                        Serial.print("absolute pressure: ");
+                        Serial.print(P, 2);
+                        Serial.print(" mb, "); // in millibars
 
-//         /* update altimeter data */
-//         altimeter_data.velocity = y_velocity;
-//         altimeter_data.AGL = rocket_height;
+                        p0 = altimeter.sealevel(P,ALTITUDE);
+                        // If you want to determine your altitude from the pressure reading,
+                        // use the altitude function along with a baseline pressure (sea-level or other).
+                        // Parameters: P = absolute pressure in mb, p0 = baseline pressure in mb.
+                        // Result: a = altitude in m.
 
-//         /* send data to altimeter queue */
-//         if(xQueueSend(altimeter_data_queue, &altimeter_data, portMAX_DELAY) != pdPASS){
-//             debugln("[-]Altimeter queue full");
-//         }
+                        a = altimeter.altitude(P, p0);
+                        Serial.print("computed altitude: ");
+                        Serial.print(a, 0);
+                        Serial.print(" meters, ");
 
-//         // delay(TASK_DELAY);
-//     }
-// }
+                    } else {
+                        Serial.println("error retrieving pressure measurement\n");
+                    } 
+                
+                } else {
+                    Serial.println("error starting pressure measurement\n");
+                }
+
+            } else {
+                Serial.println("error retrieving temperature measurement\n");
+            }
+
+        } else {
+            Serial.println("error starting temperature measurement\n");
+        }
+
+        // delay(2000);
+
+        // TODO: compute the velocity from the altimeter data
+
+
+        // assign data to queue
+        altimeter_data.pressure = P;
+        altimeter_data.altitude = 0;
+        altimeter_data.velocity = 0;
+
+        // send this pressure data to queue
+        // do not wait for the queue if it is full because the data rate is so high, 
+        // we might lose some data as we wait for the queue to get space
+        xQueueSend(altimeter_data_qHandle, &altimeter_data, 0); 
+
+    }
+
+}
 
 
 // void readGPS(void* pvParameters){
@@ -453,8 +518,9 @@ void setup(){
     /* connect to WiFi*/
     // connectToWifi();
 
-    //====================== init sensors ==========================
+    ///////////////////////// PERIPHERALS INIT /////////////////////////
     imu.init();
+    BMPInit();
 
     //==============================================================
     ;
@@ -466,8 +532,12 @@ void setup(){
 
     // debugln("Creating queues...");
 
-    //========================= create data queues ===================
-    accel_data_qHandle = xQueueCreate(GYROSCOPE_QUEUE_LENGTH, sizeof(accel_type_t)); // imu data queue
+    ///////////////////// create data queues ////////////////////
+    // this queue holds the data from MPU 6050 - this data is filtered already
+    accel_data_qHandle = xQueueCreate(GYROSCOPE_QUEUE_LENGTH, sizeof(accel_type_t)); 
+
+    // this queue hold the data read from the BMP180
+    altimeter_data_qHandle = xQueueCreate(ALTIMETER_QUEUE_LENGTH, sizeof(altimeter_type_t)); 
 
     // assert(accel_data_qHandle != nullptr);
 
@@ -542,20 +612,20 @@ void setup(){
 
    
     /* TASK 1: READ ALTIMETER DATA */
-//    if(xTaskCreate(
-//            readAltimeter,               /* function that executes this task*/
-//            "readAltimeter",             /* Function name - for debugging */
-//            STACK_SIZE,                  /* Stack depth in words */
-//            NULL,                        /* parameter to be passed to the task */
-//            2,        /* Task priority - in thGYROSCOPEis case 1 */
-//            NULL                         /* task handle that can be passed to other tasks to reference the task */
-//    ) != pdPASS){
-//     // if task creation is not successful
-//     debugln("[-]Read-Altimeter task creation failed!");
+   if(xTaskCreate(
+           readAltimeter,               /* function that executes this task*/
+           "readAltimeter",             /* Function name - for debugging */
+           STACK_SIZE,                  /* Stack depth in words */
+           NULL,                        /* parameter to be passed to the task */
+           2,        /* Task priority - in thGYROSCOPEis case 1 */
+           NULL                         /* task handle that can be passed to other tasks to reference the task */
+   ) != pdPASS){
+    // if task creation is not successful
+    debugln("[-]Read-Altimeter task creation failed!");
 
-//    }else{
-//     debugln("[+]Read-Altimeter task creation success");
-//    }
+   }else{
+    debugln("[+]Read-Altimeter task creation success");
+   }
 
    /* TASK 2: READ GPS DATA */
     // if(xTaskCreate(

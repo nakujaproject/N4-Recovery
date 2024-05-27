@@ -173,6 +173,7 @@ bool MPU6050::callibrateSensor() {
     }
 
     // get the average of the total readings
+    
 
 
 }
@@ -199,5 +200,6 @@ float MPU6050::readTemperature() {
 
     // temperature conversion formula 
     // temp = (TEMP_OUT_VALUE as a signed quantity)/340 +36.53
-
 }
+
+
