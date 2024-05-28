@@ -47,35 +47,35 @@ RND for N4 recovery team
 
 #### State functions handling 
 
+### IMU
+
+#### Calculating acceleration from accelerometer
 
 
-### IMU Calibration
 
----
+#### Calculating velocity from accelerometer
+The initial idea is to use integration. 
+Since velocity is the first integral of acceleration. From the equation: 
+``` v = u + at ```
 
-#### 1.1 Gyroscope, accelerometer and altimeter calibration
+So what we do to calculate the velocity is keep track of time, acceleration in the requires axis and then update the initial velocity. Consider the X axis: 
 
-Calibration is important to get the most accurate values from the gyro. To do this, ensure the gyroscope is resting on a surface that is still and not moving. If it is moving you will introduce errors in your calibration process. 
+``` Vx = Ux + ACCx*Sample_time ```  
+``` Ux = Vx  ```
 
-The expected values of angular velocity when the gyroscope and accelerometer is resting is 0. However you notice that there is still some reading. This reading is the error we want to offset.  We have to calculate 3 offset values that bring the sensor reading closer to 0. 
+(Let the sample tme be 1ms (0.001 s))
 
-To callibrate:
+Known issue is velocity drift: where the velocity does not get to zero even when the sensor is stationary. small errors in the measurement of acceleration and angular velocity are integrated into progressively larger errors in velocity, which are compounded into still greater errors in position
 
-1. We take a running sum, for a given amount of time,  of gyro readings in all the 3 axes. 
+Article: [IMU Velocity drift](https://en.wikipedia.org/wiki/Inertial_navigation_system#Drift_rate)
 
-2. We know that the readings should be 0 for all readings of angular acceleration. However the sensor gives the true value plus some offset. Thus:
+However, after extensive research online, it was concluded that getting velocity from accelerometer is very innacurate and unreliable. Check out this reddit thread:
+[Acceleration & velocity with MPU6050](https://www.reddit.com/r/embedded/comments/138jnhu/acceleration_velocity_with_mpu6050/)
 
-   ```  true_sensor_value = measured_sensor_value - offset ```
+Check this arduinoForum article too (ArduinForum)
+[https://forum.arduino.cc/t/integrating-acceleration-to-get-velocity/954731/8]
 
-3. Take the average of the *running sum* and you get the *average of the offset*, which we now need to subtract from the measured value and that's it. 
-
-   
-
-This calibration function is called in the setup function during peripherals init. 
-
-``` imu.callibrate() ```
-
-
+Following this, we decide to keep the accelerometer for measuring the acceleration and the rocket orientation.
 
 ### Data Filtering 
 
@@ -88,6 +88,8 @@ This calibration function is called in the setup function during peripherals ini
 ### References and Error fixes
 
 1. (Wire LIbrary Device Lock) [Confusing overload of `Wire::begin` · Issue #6616 · espressif/arduino-esp32 · GitHub](https://github.com/espressif/arduino-esp32/issues/6616)
+2. (Estimating velocity and altitude) [https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4179067/]
+3. [rocket orientation and velocity] (https://www.reddit.com/r/rocketry/comments/10q7j8m/using_accelerometers_for_rocket_attitude/)
 
 
 

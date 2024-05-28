@@ -157,26 +157,6 @@ float MPU6050::getPitch() {
     return this->pitch_angle * TO_DEG_FACTOR;
 }
 
-/**
- * Perform sensor callibration to compensate for errors
- * 
-*/
-bool MPU6050::callibrateSensor() {
-    // get a predefined number of reading defined in the test system
-    for (uint8_t i=0; i<CALLIBRATION_READINGS; i++) {
-        // check the error on the X axis 
-        
-        this->err_acc_x = this->readXAcceleration();
-
-        this->summed_err_val += this->err_acc_x;
-
-    }
-
-    // get the average of the total readings
-    
-
-
-}
 
 /**
  * perform sensor fusion
@@ -186,6 +166,7 @@ bool MPU6050::callibrateSensor() {
 void MPU6050::filterImu() {
     // complementary filter formula 
     // return this value as the final correct value from the IMU
+    
 
 }
 

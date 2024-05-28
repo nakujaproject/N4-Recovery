@@ -269,7 +269,6 @@ void readAltimeter(void* pvParameters){
 
         // TODO: compute the velocity from the altimeter data
 
-
         // assign data to queue
         altimeter_data.pressure = P;
         altimeter_data.altitude = 0;

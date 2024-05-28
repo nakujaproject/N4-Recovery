@@ -61,7 +61,7 @@
 #define PRE_FLIGHT_LED 4
 
 // number of readings to take while callibrating the sensor
-#define CALLIBRATION_READINGS   200
+#define CALLIBRATION_READINGS   1000
 
 
 #endif

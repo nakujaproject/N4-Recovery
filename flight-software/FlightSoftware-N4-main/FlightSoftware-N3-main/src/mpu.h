@@ -67,11 +67,6 @@ class MPU6050 {
     float pitch_angle, roll_angle;
     float acc_x_ms, acc_y_ms, acc_z_ms; // acceleration in m/s^2
 
-    // error callibration variables
-    float summed_err_val;
-    float err_acc_x, err_acc_y, err_acc_z;
-    float err_gyro_x, err_gyro_y, err_gyro_z;
-    float err_temp;
 
     MPU6050(uint8_t address, uint32_t accel_fs_range, uint32_t gyro_fs_range);
     void init();
@@ -82,11 +77,7 @@ class MPU6050 {
     float readYAngularVelocity();
     float readZAngularVelocity();
     float readTemperature();
-    // callibrate sensor
-    bool callibrateSensor();
-    // filter data values 
     void filterImu();
-    // // orientation calculation
     float getRoll();
     float getPitch();
 
