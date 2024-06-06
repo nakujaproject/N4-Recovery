@@ -1,7 +1,4 @@
-/*ESP32 WiFi Scanner Example. Examples > WiFi > WiFiScan
-*  Full Tutorial @ https://deepbluembedded.com/esp32-wifi-library-examples-tutorial-arduino/
-*/
- 
+
 #include "WiFi.h"
  #include "Wire.h"
 void setup()
