@@ -48,17 +48,17 @@ The logging flowchart is shown below:
 
 Using this library [SerialFlashLib](https://github.com/PaulStoffregen/SerialFlash/tree/master), we carried out flash chip hardware tests to make sure the MCU communicates as desired with the memory chip. The circuit diagram is shown below:
 
-![flash-cct](.\images\flash-mem.png)
+![flash-cct](./images/flash-mem.png)
 
 The following snapshot from serial monitor shows that ESP32 was able to recognize the chip over the SPI channel.
 
-![flash-test](.\images\flash-test.png)
+![flash-test](./images/flash-test.png)
 
 However, there is a discrepancy when we use this library to recognize this memory chip. This may be because the chip is a fake and therefore not recognized by this library. By default, the lib shows the size of the chip as 1MB, which is wrong. 
 
 If we use the [SparkFun_SPI_SerialFlashChip library](https://github.com/sparkfun/SparkFun_SPI_SerialFlash_Arduino_Library/tree/main), we are able to recognize the chip as shown below.
 
-![flash-SFE](.\images\flash-mem-SFE.png)
+![flash-SFE](./images/flash-mem-SFE.png)
 
 The flash chip is working okay from the tests above. 
 
@@ -114,11 +114,11 @@ Saving and checking the properties of the two files in Windows platform shows th
 
 For the decimal file, the size is 53 bytes
 
-![dec-test](./dec-test.png)
+![dec-test](./data-logging-and-memory-operations/dec-test.png)
 
 For the hexadecimal file, the size is 50 bytes
 
-![hex-test](./hex-test.png)
+![hex-test](./data-logging-and-memory-operations/hex-test.png)
 
 The hexadecimal file is 3 bytes smaller as observed. 
 
