@@ -1,6 +1,9 @@
-### Encoding and Storage 
-Consider the case where you want to store a string like "125" in memory. To store such a string, you need three bytes, and at least one more byte for the length. 
+## Encoding and Storage 
+---
 
+The aim of this optimization is to ensure we have as much memory as possible to store the flight data. To do this, we need to test how much in-memory space various data formats will take. This is explained below
+
+### Encoding and storing integers and floats
 To carry out this comparison, I created two files. One with purely integer values and the other with the same integer values but in HEX format.
 
 ```
@@ -50,6 +53,27 @@ For strings, since we are not going to use any non-ASCII characters, we can stor
 
 If we could encode this string into hex, using UTF-8 encoding scheme, it would take the same 12 bytes. 
 This test is carried out below to justify why we store the strings as is without encoding them. 
+
+I wrote a program to convert a string to HEX format, and compared the following string:
+```
+flight data
+```
+
+In HEX format, it produces the following:
+
+```
+666C696768742064617461
+```
+
+Raw string size (Windows platform)
+
+![raw-string](./raw-string.png)
+
+Hex string size 
+
+![hex-string](./dec-test.png)
+
+The raw string occupies 11 bytes, while the same strinf in HEX format occupies a whooping 24 bytes! This is not feasible considering we will be storing several strings in a 4 MB limited flash memory over the flight time, which will certainly occupy lots of memory if we store HEX strings.
 
 
 
