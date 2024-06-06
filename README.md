@@ -35,10 +35,40 @@ RND for N4 recovery team
 
 ---
 
-For logging and storage, we use two methods. One is logging to an external SPI flash memory, the WINBOND W25Q32JVSIQ2135, which is a 32Mbits(4 MB) storage chip. 
+For logging and storage, we use two methods to ensure redundancy.
+
+One is logging to an external SPI flash memory during flight, the WINBOND W25Q32JVSIQ2135, which is a 32Mbits(4 MB) storage chip. 
 For redundancy, we add a microSD card into which data is dumped from the external SPI flash memory POST-FLIGHT.
 
-The logginG flowchart is shown below:
+The logging flowchart is shown below:
+
+
+
+#### Flash chip hardware tests 
+
+Using this library [SerialFlashLib](https://github.com/PaulStoffregen/SerialFlash/tree/master), we carried out flash chip hardware tests to make sure the MCU communicates as desired with the memory chip. The circuit diagram is shown below:
+
+![flash-cct](.\images\flash-mem.png)
+
+The following snapshot from serial monitor shows that ESP32 was able to recognize the chip over the SPI channel.
+
+![flash-test](.\images\flash-test.png)
+
+However, there is a discrepancy when we use this library to recognize this memory chip. This may be because the chip is a fake and therefore not recognized by this library. By default, the lib shows the size of the chip as 1MB, which is wrong. 
+
+If we use the [SparkFun_SPI_SerialFlashChip library](https://github.com/sparkfun/SparkFun_SPI_SerialFlash_Arduino_Library/tree/main), we are able to recognize the chip as shown below.
+
+![flash-SFE](.\images\flash-mem-SFE.png)
+
+The flash chip is working okay from the tests above. 
+
+Now, since we want to access the flash memory in a file-system kind of way, where we can read and write FILES, we use the SerialFlash Lib, even if the flash memory is not recognized by it. This will make it easier for us to access huge blocks of memory in chunks and avoid accessing the mem directly. In addition, we can erase files and use SD-like methods to access data.
+
+ The demonstration below received data from the serial monitor, and writes it to a file inside the flash memory. 
+
+
+
+
 
 ## Encoding and space optimizations 
 
@@ -113,11 +143,11 @@ In HEX format, it produces the following:
 
 Raw string size (Windows platform)
 
-![raw-string](./raw-string.png)
+![raw-string](./data-logging-and-memory-operations/raw-string.png)
 
 Hex string size 
 
-![hex-string](./dec-test.png)
+![hex-string](./data-logging-and-memory-operations/dec-test.png)
 
 The raw string occupies 11 bytes, while the same strinf in HEX format occupies a whooping 24 bytes! This is not feasible considering we will be storing several strings in a 4 MB limited flash memory over the flight time, which will certainly occupy lots of memory if we store HEX strings.
 
@@ -180,7 +210,6 @@ Following this, we decide to keep the accelerometer for measuring the accelerati
 5. https://www.codeproject.com/Articles/99547/Hex-strings-to-raw-data-and-back
 6. https://cdn.shopify.com/s/files/1/1014/5789/files/Standard-ASCII-Table_large.jpg?10669400161723642407
 7. https://www.geeksforgeeks.org/convert-a-string-to-hexadecimal-ascii-values/
-
 
 
 
