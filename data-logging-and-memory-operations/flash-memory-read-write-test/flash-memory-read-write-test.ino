@@ -36,9 +36,10 @@ struct fake_data {
 };
 
 char data_buffer[100]; // to hold csv formatted data
+char read_buffer[5000]; // to hold data read from the file memory
 
 struct fake_data dummy_data;
-struct fake_dats* p_dummy_data;
+struct fake_data* p_dummy_data = &dummy_data;
 
 bool initFlash() {
   if(!SerialFlash.begin(CS_PIN)) {
@@ -47,15 +48,45 @@ bool initFlash() {
   return true;
 }
 
-void writeToFile(struct fake_data* d) {
+void writeToFile(char* buff) {
   // try opening file 
   file = SerialFlash.open(filename);
   if(file) {
-    Serial.println("File ready for R/W");
+    Serial.println("Writing to file");
+    size_t size_of_buffer = sizeof(buff);
+    file.write(buff, size_of_buffer);
     
+    uint32_t pos = file.position();
+    Serial.println(pos);
+    
+    // close file after writing
+    file.close();
+    Serial.println("Done writing");
+    
+  } else {
+    Serial.println(F("Failed opening file"));
   }
 
-  // close file after writing
+}
+
+void readFile(char* buff) {
+  // try opening file 
+  file = SerialFlash.open(filename);
+  if(file) {
+//    uint32_t sz = file.size();
+    file.seek(0);
+    
+    file.read(buff, 4);
+
+    Serial.print("Data read from memory: ");
+    Serial.println(buff);
+    
+    // close file 
+    file.close();
+    
+  } else {
+    Serial.println(F("Failed opening file"));
+  }
   
 }
 
@@ -87,24 +118,37 @@ void setup() {
   randomSeed(analogRead(13));
 
   // generate fake data 
-  p_dummy_data.ax = random(0, 56);
-  p_dummy_data.ay = random(0, 10);
-  p_dummy_data.alt = random(0, 1500);
+  p_dummy_data->ax = random(0, 56);
+  p_dummy_data->ay = random(0, 10);
+  p_dummy_data->alt = random(0, 1500);
 
   sprintf(data_buffer,
-          "%.2f, .2f, %d", 
-          p_dummy_data.ax,
-          p_dummy_data.ay,
-          p_dummy_data.alt);
+          "%.2f, %.2f, %d", 
+          p_dummy_data->ax,
+          p_dummy_data->ay,
+          p_dummy_data->alt);
 
+  Serial.print(F("Data to write: "));
   Serial.println(data_buffer);
+  Serial.println();
 
   // write to file 
-  
+  writeToFile(data_buffer);
+
+  // get the file size
+//  file = SerialFlash.open(filename);
+//  uint32_t sz = file.size();
+//  Serial.print("File size: "); Serial.println(sz);
+
+  // read from file 
+  readFile(read_buffer);
+
+  // confirm the data read 
+//  Serial.print(F("Data read from memory: "));
+//  Serial.println(read_buffer);
 }
 
 
 void loop() {
   
-
 }

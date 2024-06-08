@@ -71,6 +71,9 @@ First we test for file R/W.
 ##### Known issue
 When using SPI protocol on breadboard, it might fail to communicate with the peripheral device. This is because SPI is high-speed and is expected to be used with short traces on PCB. When testing this part, I experienced errors before i realized this issue. To correct this, i reduced the SPI communication speed from 50MHz to 20MHz so that I could access the R/W functions using the breadboard. More details are in reference #8 below. 
 
+
+
+
 The image below shows the response after I reduced the SPI speed: 
 ![flash](./data-logging-and-memory-operations/file-ready.png)
 
