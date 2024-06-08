@@ -78,7 +78,6 @@ Testing method
 1. I created a file 4KB in size and named it ```test.csv```. 
 2. Then generated dummy data using random() functions in Arduino. 
 3. I then appended this random data to the file, while checking the size being occupied by the file
-4. 
 
 
 ## Encoding and space optimizations 
