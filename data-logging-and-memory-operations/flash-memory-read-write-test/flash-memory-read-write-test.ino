@@ -29,11 +29,11 @@ const char* filename = "test.csv";
 float filesize = 4096;
 
 // test data to write
-struct fake_data {
+struct fake_data_type {
   float ax;
   float ay;
   int alt;
-};
+} fake_data;
 
 char data_buffer[100]; // to hold csv formatted data
 char read_buffer[5000]; // to hold data read from the file memory
@@ -69,20 +69,26 @@ void writeToFile(char* buff) {
 
 }
 
-void readFile(char* buff) {
+// THIS FUNCTION FAILED !! Check the SPIMemory.ino file 
+void readFile() {
   // try opening file 
   file = SerialFlash.open(filename);
   if(file) {
-//    uint32_t sz = file.size();
-    file.seek(0);
-    
-    file.read(buff, 4);
+    uint32_t sz = file.size();
+    uint32_t pos = file.getFlashAddress();
 
-    Serial.print("Data read from memory: ");
-    Serial.println(buff);
-    
-    // close file 
-    file.close();
+//    Serial.print(sz); Serial.println(pos);
+    Serial.println(filename);
+
+//    file.seek(0);
+    Serial.println(file.getFlashAddress());
+    file.read(read_buffer, 256);
+//
+//    Serial.print("Data read from memory: ");
+    Serial.println(read_buffer);
+//    
+//    // close file 
+//    file.close();
     
   } else {
     Serial.println(F("Failed opening file"));
@@ -141,7 +147,7 @@ void setup() {
 //  Serial.print("File size: "); Serial.println(sz);
 
   // read from file 
-  readFile(read_buffer);
+  readFile();
 
   // confirm the data read 
 //  Serial.print(F("Data read from memory: "));
