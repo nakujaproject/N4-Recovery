@@ -107,6 +107,30 @@ uint32_t getNextFlashStartAddress() {
   return testAddress;
 }
 
+// raw hex dump of the contents of the flash chip.
+// each call dumps 1K.
+void dumpRawMemory() {
+
+  for (uint16_t x = 0 ; x < 0x0400 ; x++)
+  {
+    if (rawDumpAddress % 16 == 0) {
+      Serial.println();
+      Serial.print("0x");
+      if (rawDumpAddress < 0x1000) Serial.print("00");
+      if (rawDumpAddress < 0x100) Serial.print("0");
+      if (rawDumpAddress < 0x10) Serial.print("0");
+      Serial.print(rawDumpAddress, HEX);
+      Serial.print(": ");
+    }
+
+    byte val = myFlash.readByte( rawDumpAddress++ );
+    if (val < 0x10) Serial.print("0");
+    Serial.print(val, HEX);
+    Serial.print(" ");
+  }
+  Serial.println();
+}
+
 void dumpOneRecording() {
   Serial.println("\n Dumping one recording");
 //  myFlash.readByte(nextFlashReadAddress, (uint8_t*)&dummy_data, sizeof(dummy_data));
@@ -189,41 +213,41 @@ void checkForSerialCommand() {
         eraseFlash();
         showMenu();
         break;
-//
-//      // dump raw memory from the flash
-//      case 'R':
-//        // R = start at address 0x00000000
-//        rawDumpAddress = 0;
-//      case 'r':
-//        // r = dump next 1k block
-//        isRecording = false;
-//        dumpRawMemory();
-//        break;
-//
-//      // start recording
-//      case 's':
-//      case 'S':
-//        Serial.println(F("START RECORDING"));
-//        fakeTemperature = 12.0;
-//        fakePressure = 1013.25;
-//        fakeAcceleration = 1.0;
-//        dummy_data.flightNumber = prevFlightNumber + 1;
-//        dummy_data.recordNumber = 0;
-//        isRecording = true;
-//        break;
-//
-//      // stop recording
-//      case 'p':
-//      case 'P':
-//        Serial.println(F("STOP RECORDING"));
-//        prevFlightNumber = dummy_data.flightNumber;
-//        Serial.print(F("Logged "));
-//        Serial.print( dummy_data.recordNumber );
-//        Serial.println(F(" records for that flight."));
-//        Serial.print(F("Next free memory location is: 0x"));
-//        Serial.println( nextFlashWriteAddress, HEX );
-//        isRecording = false;
-//        break;
+
+      // dump raw memory from the flash
+      case 'R':
+        // R = start at address 0x00000000
+        rawDumpAddress = 0;
+      case 'r':
+        // r = dump next 1k block
+        isRecording = false;
+        dumpRawMemory();
+        break;
+
+      // start recording
+      case 's':
+      case 'S':
+        Serial.println(F("START RECORDING"));
+        dummy_data.ax = 12.0;
+        dummy_data.ay = 1.0;
+        dummy_data.alt = 1013.25;
+        dummy_data.flightNumber = prevFlightNumber + 1;
+        dummy_data.recordNumber = 0;
+        isRecording = true;
+        break;
+
+      // stop recording
+      case 'p':
+      case 'P':
+        Serial.println(F("STOP RECORDING"));
+        prevFlightNumber = dummy_data.flightNumber;
+        Serial.print(F("Logged "));
+        Serial.print( dummy_data.recordNumber );
+        Serial.println(F(" records for that flight."));
+        Serial.print(F("Next free memory location is: 0x"));
+        Serial.println( nextFlashWriteAddress, HEX );
+        isRecording = false;
+        break;
 
       default:
         showMenu();
@@ -273,11 +297,35 @@ void setup() {
           p_dummy_data->ay,
           p_dummy_data->alt);
 
-  Serial.print(F("Data to write: "));
-  Serial.println(data_buffer);
-  Serial.println();
+//  Serial.print(F("Data to write: "));
+//  Serial.println(data_buffer);
+//  Serial.println();
 }
 
 void loop() {
+  currentMillis = millis();
+  
   checkForSerialCommand();
+
+  // are we recording?
+  if(isRecording == true) {
+    // is it time for another sample
+    if(currentMillis - prevMillis > sample_interval) {
+      prevMillis = currentMillis;
+
+      // prepare the record for writing
+      // data from sensors 
+      dummy_data.recordNumber++;
+      dummy_data.timestamp = currentMillis;
+      dummy_data.ax = random(0, 98);
+      dummy_data.ay = random(20, 20);
+      dummy_data.alt = random(0, 1050);
+
+      // write the record to the flash chip 
+      myFlash.writeByteArray(nextFlashWriteAddress, (uint8_t*)&dummy_data, sizeof(dummy_data));
+      nextFlashWriteAddress = nextFlashWriteAddress + sizeof(dummy_data);
+      
+      
+    }
+  }
 }
