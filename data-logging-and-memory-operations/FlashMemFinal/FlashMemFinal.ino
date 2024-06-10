@@ -8,6 +8,7 @@
 #define FILE_SIZE_512K 524288L
 #define FILE_SIZE_1M   1048576L
 #define FILE_SIZE_4M   4194304L
+// TODO: add different file sizes
 
 SerialFlashFile file;
 
