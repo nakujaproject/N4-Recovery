@@ -109,15 +109,16 @@ uint32_t getNextFlashStartAddress() {
 
 void dumpOneRecording() {
   Serial.println("\n Dumping one recording");
-  myFlash.readByte(nextFlashReadAddress, (uint8_t*)&dummy_data, sizeof(dummy_data));
-  nextFlashReadAddress = nextFlashReadAddress + sizeof(oneRecord);
+//  myFlash.readByte(nextFlashReadAddress, (uint8_t*)&dummy_data, sizeof(dummy_data));
+  myFlash.readByte(nextFlashReadAddress, (uint8_t*)&dummy_data);
+  nextFlashReadAddress = nextFlashReadAddress + sizeof(dummy_data);
 
    // quick sanity check - the flight number should NOT be 0xFFFFFFFF
   if (dummy_data.flightNumber != 0xFFFFFFFF) {
     // remember which flight this is
     uint32_t thisFlightNumber = dummy_data.flightNumber;
 
-    // print out the headings
+    // print out the headingson
     Serial.println(F("Flt Num,Rec Num,Timestamp,ax,ay,alt"));
 
     // erased flash memory reads as 0xFF so use that to check if the end of the data has been reached
@@ -128,7 +129,7 @@ void dumpOneRecording() {
       Serial.print( "," );
       Serial.print( dummy_data.recordNumber );
       Serial.print( "," );
-      Serial.print( dummy_data.time_stamp );
+      Serial.print( dummy_data.timestamp );
       Serial.print( "," );
       Serial.print( dummy_data.ax );
       Serial.print( "," );
@@ -180,14 +181,14 @@ void checkForSerialCommand() {
         showMenu();
         break;
 
-//      // erase the flash - takes about 20 sec for my 25Q64 device
-//      case 'e':
-//      case 'E':
-//        isRecording = false;
-//        prevFlightNumber = 0;
-//        eraseFlash();
-//        showMenu();
-//        break;
+      // erase the flash - takes about 20 sec for my 25Q64 device
+      case 'e':
+      case 'E':
+        isRecording = false;
+        prevFlightNumber = 0;
+        eraseFlash();
+        showMenu();
+        break;
 //
 //      // dump raw memory from the flash
 //      case 'R':
