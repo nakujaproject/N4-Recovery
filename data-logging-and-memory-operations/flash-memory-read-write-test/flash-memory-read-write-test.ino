@@ -29,7 +29,7 @@ const char* filename = "test.csv";
 float filesize = 4096;
 
 // test data to write
-struct fake_data_type {
+struct {
   float ax;
   float ay;
   int alt;
