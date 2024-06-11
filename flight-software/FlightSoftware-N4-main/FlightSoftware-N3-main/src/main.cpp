@@ -3,9 +3,7 @@
  * 0x5765206D6179206D616B65206F757220706C616E73202C
  * 0x62757420476F642068617320746865206C61737420776F7264
  * 
- * 
 */
-
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -42,10 +40,10 @@ TinyGPSPlus gps;
 /* Flight data logging */
 uint8_t cs_pin = 5;
 uint8_t flash_led_pin = 4;
-char filename[] = "flight1.bin"; // filename must be less than 20 chars, including the file extension
+char filename[] = "flight1.bin";    // Filename must be less than 20 chars, including the file extension
 uint32_t FILE_SIZE_512K = 524288L;  // 512KB
-uint32_t FILE_SIZE_1M  = 1048576L; // 1MB
-uint32_t FILE_SIZE_4M  = 4194304L; // 4MB
+uint32_t FILE_SIZE_1M  = 1048576L;  // 1MB
+uint32_t FILE_SIZE_4M  = 4194304L;  // 4MB
 DataLogger data_logger(cs_pin, flash_led_pin, filename, FILE_SIZE_4M);
 
 /* position integration variables */

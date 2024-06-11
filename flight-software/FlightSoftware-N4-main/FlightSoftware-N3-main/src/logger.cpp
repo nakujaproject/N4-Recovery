@@ -29,20 +29,37 @@ DataLogger::DataLogger(uint8_t cs_pin, uint8_t led_pin, char* filename, uint32_t
  * @param none
 */
 void DataLogger::loggerFormat() {
-    uint8_t id[5];
-    SerialFlash.readID(id);
+    this->loggerEquals();
+    Serial.println(F("Formatting flash memory..."));
+ 
     SerialFlash.eraseAll();
 
+    // create a dummy file so that next time we start up, we know there
+    // is an actual file system
+    if(SerialFlash.create("dummy.txt", 100)) {
+        Serial.println(F("Created dummy file "));
+        SerialFlashFile file;
+        file = SerialFlash.open("dummy.txt");
+        file.write("Recovery team", 14);
+        file.close();
+    } else {
+        Serial.println(F("Failed to create dummy file "));
+    }   
+    
+    Serial.println(F("Done"));
+
     // while the flash is formatting, blink the LED at a frequency of 10Hz
-    while(!SerialFlash.ready()) {
-        digitalWrite(this->_led_pin, HIGH);
-        delay(_flash_delay);
-        digitalWrite(this->_led_pin, LOW);
-        delay(_flash_delay);
-    }
+    // while(!SerialFlash.ready()) {
+    //     digitalWrite(this->_led_pin, HIGH);
+    //     delay(_flash_delay);
+    //     digitalWrite(this->_led_pin, LOW);
+    //     delay(_flash_delay);
+    // }
 
     // remain solid lit once formatting is done 
-    digitalWrite(this->_led_pin, HIGH);
+    // digitalWrite(this->_led_pin, HIGH);
+
+    this->loggerEquals();
 
 }
 
@@ -52,20 +69,58 @@ void DataLogger::loggerFormat() {
  * 
 */
 bool DataLogger::loggerInit() {
+    char filename[20];
+
     if (!SerialFlash.begin(this->_cs_pin)) {
         return false;
     } else {
-        // format the flash memory
-        // this->loggerFormat();
+        this->loggerEquals(); // prettify
         this->loggerInfo();
 
         // init flash LED
         pinMode(this->_led_pin, OUTPUT);
+        digitalWrite(this->_led_pin, HIGH);
 
-        // // create logging file with the provided filename
+        if(SerialFlash.exists("dummy.txt")) {
+            Serial.println(F("FS found"));
+        } else {
+            Serial.println(F("FS not found"));
+            int status = SerialFlash.create("dummy.txt", 100);
+            Serial.println(status);
+        }
+
+        // return a list of files currently in the memory
+        // if(!SerialFlash.exists("dummy.txt")) {
+        //     Serial.println(F("Flash doesn't appear to hold a file system - may need erasing first.")); // TODO: Log to system logger
+
+        //     // format the memory
+        //     // this->loggerFormat();
+
+        // } else {
+        //     Serial.println(F("Files currently in flash:"));
+        //     SerialFlash.opendir();
+
+        //     while (1) {
+        //         uint32_t filesize;
+        //         if (SerialFlash.readdir(filename, sizeof(filename), filesize)) {
+        //             Serial.print(filename);
+        //             Serial.print(F("  "));
+        //             Serial.print(filesize);
+        //             Serial.print(F(" bytes"));
+        //             Serial.println();
+        //         }
+        //         else {
+        //             break; // no more files
+        //         }
+        //     }
+        // }
+
+        // create logging file with the provided filename
         // if (!SerialFlash.createErasable(this->_filename, this->_file_size)) {
         //     return false;
         // }
+
+        this->loggerEquals(); // prettify
 
         return true;
     }
@@ -111,9 +166,6 @@ void DataLogger::loggerWrite(){
 
     // TODO: maybe return the size of memory written 
 
-    
-
-
 }
 
 /**
@@ -130,12 +182,35 @@ void DataLogger::loggerRead(uint8_t file_pointer, char buffer) {
 }
 
 /**
- * @brief print the data about the flash 
+ * @brief print the data about the flash memory
  *  
 */
 void DataLogger::loggerInfo() {
     uint8_t id[5];
+    Serial.println(F("Data logging system check"));
     SerialFlash.readID(id);
+    Serial.println(F("Data logging system OK!"));
     Serial.print(F("Capacity: "));
     Serial.println(SerialFlash.capacity( id ));
+
+}
+
+/**
+ * @brief helper function to print spaces for data formatting
+*/
+void DataLogger::loggerSpaces() {
+    for(int i = 0; i < 25; i++) {
+        Serial.println(F(" "));
+    }
+}
+
+/**
+ * @brief helper function to print = for data formatting
+*/
+void DataLogger::loggerEquals() {
+    Serial.println();
+    for(int i = 0; i < 25; i++) {
+        Serial.print("=");
+    }
+    Serial.println();
 }

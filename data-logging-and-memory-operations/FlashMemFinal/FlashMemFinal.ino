@@ -18,10 +18,10 @@ const uint32_t sampleInterval = 10;
 const byte PIN_FLASH_CS = 5; // Change this to match the Chip Select pin on your board
 
 // edit this structure to hold one set of parameters you want to log
-struct oneRecordType {
+struct oneRecordType {  
   uint32_t recordNumber;
   uint32_t timeStamp;
-  float temperature;
+  float temperature;  
   float pressure;
   float acceleration;
 } oneRecord;
