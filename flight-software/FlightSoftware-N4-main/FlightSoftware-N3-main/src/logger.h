@@ -17,7 +17,7 @@
 #include <Arduino.h>
 #include <SerialFlash.h>
 
-class Logger {
+class DataLogger {
     private:
         uint8_t _cs_pin;         // Chip select pin for the SPI flash memory
         uint8_t _led_pin;      // this LED flashes at a 10Hz frequency when the SPI flash chip is foramtting
@@ -27,9 +27,10 @@ class Logger {
         uint8_t _file_pointer = 0;   // pointer to the start of the file- to be used when reading the file 
 
     public:
-        Logger(uint8_t cs_pin, uint8_t led_pin, char* filename, uint32_t filesize); // constructor
+        DataLogger(uint8_t cs_pin, uint8_t led_pin, char* filename, uint32_t filesize); // constructor
         bool loggerInit();
         void loggerFormat();
+        void loggerInfo();
         bool loggerTest();
         void loggerWrite();
         void loggerRead(uint8_t file_pointer, char buffer);

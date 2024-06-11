@@ -15,20 +15,20 @@
  * @param filename the filename of the file being created
  * @param file_size the size of the file being created
 */
-Logger::Logger(uint8_t cs_pin, uint8_t led_pin, char* filename, uint32_t filesize) {
+DataLogger::DataLogger(uint8_t cs_pin, uint8_t led_pin, char* filename, uint32_t filesize) {
     this->_cs_pin = cs_pin;
     this->_led_pin = led_pin;
     this->_file_size = filesize;
 
     strcpy(this->_filename, filename);
-    
+
 }
 
 /**
  * @brief format the flash memory
  * @param none
 */
-void Logger::loggerFormat() {
+void DataLogger::loggerFormat() {
     uint8_t id[5];
     SerialFlash.readID(id);
     SerialFlash.eraseAll();
@@ -51,25 +51,24 @@ void Logger::loggerFormat() {
  * @return true on success and false on fail
  * 
 */
-bool Logger::loggerInit() {
+bool DataLogger::loggerInit() {
+    if (!SerialFlash.begin(this->_cs_pin)) {
+        return false;
+    } else {
+        // format the flash memory
+        // this->loggerFormat();
+        this->loggerInfo();
 
+        // init flash LED
+        pinMode(this->_led_pin, OUTPUT);
 
-    // if (!SerialFlash.begin(this->_cs_pin)) {
-    //     return false;
-    // } else {
-    //     // format the flash memory
-    //     this->loggerFormat();
+        // // create logging file with the provided filename
+        // if (!SerialFlash.createErasable(this->_filename, this->_file_size)) {
+        //     return false;
+        // }
 
-    //     // init flash LED
-    //     pinMode(this->_led_pin, OUTPUT);
-
-    //     // create logging file with the provided filename
-    //     if (!SerialFlash.createErasable(this->_filename, this->_file_size)) {
-    //         return false;
-    //     }
-
-    //     return true;
-    // }
+        return true;
+    }
 }
 
 /**
@@ -79,7 +78,7 @@ bool Logger::loggerInit() {
  * @return true if R/W OK, false otherwise
  * 
 */
-bool Logger::loggerTest() {
+bool DataLogger::loggerTest() {
     // create a string variable 
     char tst_var[15] = "FlashTesting";
 
@@ -97,7 +96,7 @@ bool Logger::loggerTest() {
  * in this function, we write the data structs to the file as comma separated values
  * 
 */
-void Logger::loggerWrite(){
+void DataLogger::loggerWrite(){
     // at this point, the flash memory is ready for writing and reading 
     // check that the passed struct is not null
     // if(data == NULL) {
@@ -123,9 +122,20 @@ void Logger::loggerWrite(){
  * @param _file_pointer pointer to where we want to start reading the file. By default, this value os 0
  * @param buffer char array to read the data into
 */
-void Logger::loggerRead(uint8_t file_pointer, char buffer) {
+void DataLogger::loggerRead(uint8_t file_pointer, char buffer) {
     // confirm the file exists
     // seek the file to the start 
 
 
+}
+
+/**
+ * @brief print the data about the flash 
+ *  
+*/
+void DataLogger::loggerInfo() {
+    uint8_t id[5];
+    SerialFlash.readID(id);
+    Serial.print(F("Capacity: "));
+    Serial.println(SerialFlash.capacity( id ));
 }

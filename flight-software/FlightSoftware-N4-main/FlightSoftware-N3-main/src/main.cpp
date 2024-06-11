@@ -46,8 +46,7 @@ char filename[] = "flight1.bin"; // filename must be less than 20 chars, includi
 uint32_t FILE_SIZE_512K = 524288L;  // 512KB
 uint32_t FILE_SIZE_1M  = 1048576L; // 1MB
 uint32_t FILE_SIZE_4M  = 4194304L; // 4MB
-Logger data_logger(cs_pin, flash_led_pin, filename, FILE_SIZE_4M);
-
+DataLogger data_logger(cs_pin, flash_led_pin, filename, FILE_SIZE_4M);
 
 /* position integration variables */
 long long current_time = 0;
@@ -56,7 +55,6 @@ long long previous_time = 0;
 /**
  * ///////////////////////// DATA VARIABLES /////////////////////////
 */
-
 
 typedef struct Acceleration_Data{
     float ax;
@@ -512,18 +510,8 @@ void setup(){
     /* Setup GPS*/
     // hard.begin(9600, SERIAL_8N1, RX, TX);
 
-    //
-    // if (!SPIFFS.begin(true)) debugln("[-] An error occurred while mounting SPIFFS");
-    // else debugln("[+] SPIFFS mounted successfully");
-
-    //setup flash memory
-    // if (!flash.begin()) debugln("[-] An error occurred while mounting flash");
-    // else{
-    //     debug("[+] Flash mounted successfully ");
-    //     debugln(((String)flash.getCapacity() + " bytes" ));
-
-    //     flash.eraseChip();
-    // }
+    /* initialize the data logging system */
+    data_logger.loggerInit();
 
     /* DEBUG: set up state simulation leds */
     // for(auto pin: state_leds){
