@@ -20,6 +20,7 @@
 #include "state_machine.h"
 #include "mpu.h"
 #include <SFE_BMP180.h>
+#include "logger.h"
 
 /**
  * DEBUG 
@@ -38,9 +39,15 @@ PubSubClient mqtt_client(wifi_client);
 HardwareSerial hard(2);
 TinyGPSPlus gps;
 
-/* Onboard logging */
-File file;
-SPIFlash flash(SS, &SPI);
+/* Flight data logging */
+uint8_t cs_pin = 5;
+uint8_t flash_led_pin = 4;
+char filename[] = "flight1.bin"; // filename must be less than 20 chars, including the file extension
+uint32_t FILE_SIZE_512K = 524288L;  // 512KB
+uint32_t FILE_SIZE_1M  = 1048576L; // 1MB
+uint32_t FILE_SIZE_4M  = 4194304L; // 4MB
+Logger data_logger(cs_pin, flash_led_pin, filename, FILE_SIZE_4M);
+
 
 /* position integration variables */
 long long current_time = 0;

@@ -12,14 +12,16 @@
  * 
  * @param cs_pin chip select pin
  * @param flas_led LED to show formatting status
- * @param  filename the filename of the file being created
- * @param   file_size the size of the file being created
+ * @param filename the filename of the file being created
+ * @param file_size the size of the file being created
 */
-Logger::Logger(uint8_t cs_pin, uint8_t flash_led, char filename, uint32_t filesize) {
+Logger::Logger(uint8_t cs_pin, uint8_t led_pin, char* filename, uint32_t filesize) {
     this->_cs_pin = cs_pin;
-    this->_flash_led = flash_led;
-    this->_filename = filename;
+    this->_led_pin = led_pin;
     this->_file_size = filesize;
+
+    strcpy(this->_filename, filename);
+    
 }
 
 /**
@@ -29,18 +31,18 @@ Logger::Logger(uint8_t cs_pin, uint8_t flash_led, char filename, uint32_t filesi
 void Logger::loggerFormat() {
     uint8_t id[5];
     SerialFlash.readID(id);
-    SerialFash.eraseAll();
+    SerialFlash.eraseAll();
 
     // while the flash is formatting, blink the LED at a frequency of 10Hz
     while(!SerialFlash.ready()) {
-        digitalWrite(this->_flash_led, HIGH);
+        digitalWrite(this->_led_pin, HIGH);
         delay(_flash_delay);
-        digitalWrite(this->_flash_led, LOW);
+        digitalWrite(this->_led_pin, LOW);
         delay(_flash_delay);
     }
 
     // remain solid lit once formatting is done 
-    digitalWrite(this->_flash_led, HIGH);
+    digitalWrite(this->_led_pin, HIGH);
 
 }
 
@@ -52,22 +54,22 @@ void Logger::loggerFormat() {
 bool Logger::loggerInit() {
 
 
-    if (!SerialFlash.begin(this->_cs_pin)) {
-        return false;
-    } else {
-        // format the flash memory
-        this->loggerFormat();
+    // if (!SerialFlash.begin(this->_cs_pin)) {
+    //     return false;
+    // } else {
+    //     // format the flash memory
+    //     this->loggerFormat();
 
-        // init flash LED
-        pinMode(this->_flash_led, OUTPUT);
+    //     // init flash LED
+    //     pinMode(this->_led_pin, OUTPUT);
 
-        // create logging file with the provided filename
-        if (!SerialFlash.createErasable(this->_filename, this->_file_size)) {
-            return false;
-        }
+    //     // create logging file with the provided filename
+    //     if (!SerialFlash.createErasable(this->_filename, this->_file_size)) {
+    //         return false;
+    //     }
 
-        return true;
-    }
+    //     return true;
+    // }
 }
 
 /**
@@ -79,7 +81,7 @@ bool Logger::loggerInit() {
 */
 bool Logger::loggerTest() {
     // create a string variable 
-    char tst_var[15] = "FlashTesting"
+    char tst_var[15] = "FlashTesting";
 
     // write 
 
@@ -95,16 +97,16 @@ bool Logger::loggerTest() {
  * in this function, we write the data structs to the file as comma separated values
  * 
 */
-void Logger::loggerWrite(struct* data){
+void Logger::loggerWrite(){
     // at this point, the flash memory is ready for writing and reading 
     // check that the passed struct is not null
-    if(data == NULL) {
-        // do sth here 
-        // maybe log error
-    } else {
-        // data valid, ready to proceed
+    // if(data == NULL) {
+    //     // do sth here 
+    //     // maybe log error
+    // } else {
+    //     // data valid, ready to proceed
 
-    }
+    // }
 
     // TODO: check splitting the passed struct into single values 
 
