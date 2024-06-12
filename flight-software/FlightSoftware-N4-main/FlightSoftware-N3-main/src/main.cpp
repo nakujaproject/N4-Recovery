@@ -10,14 +10,12 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <TinyGPS++.h>
-#include "FS.h"
-#include "SPIFFS.h"
-#include <SPIMemory.h>
 #include "sensors.h"
 #include "defs.h"
 #include "state_machine.h"
 #include "mpu.h"
 #include <SFE_BMP180.h>
+#include "SerialFlash.h"
 #include "logger.h"
 
 /**
@@ -44,7 +42,8 @@ char filename[] = "flight1.bin";    // Filename must be less than 20 chars, incl
 uint32_t FILE_SIZE_512K = 524288L;  // 512KB
 uint32_t FILE_SIZE_1M  = 1048576L;  // 1MB
 uint32_t FILE_SIZE_4M  = 4194304L;  // 4MB
-DataLogger data_logger(cs_pin, flash_led_pin, filename, FILE_SIZE_4M);
+SerialFlashFile file;
+DataLogger data_logger(cs_pin, flash_led_pin, filename, file,  FILE_SIZE_4M);
 
 /* position integration variables */
 long long current_time = 0;

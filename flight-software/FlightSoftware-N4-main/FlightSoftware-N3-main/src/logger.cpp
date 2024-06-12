@@ -15,12 +15,13 @@
  * @param filename the filename of the file being created
  * @param file_size the size of the file being created
 */
-DataLogger::DataLogger(uint8_t cs_pin, uint8_t led_pin, char* filename, uint32_t filesize) {
+DataLogger::DataLogger(uint8_t cs_pin, uint8_t led_pin, char* filename, SerialFlashFile file, uint32_t filesize) {
     this->_cs_pin = cs_pin;
     this->_led_pin = led_pin;
     this->_file_size = filesize;
 
     strcpy(this->_filename, filename);
+    this->_file = file;
 
 }
 
@@ -85,9 +86,26 @@ bool DataLogger::loggerInit() {
             Serial.println(F("FS found"));
         } else {
             Serial.println(F("FS not found"));
-            int status = SerialFlash.create("dummy.txt", 100);
-            Serial.println(status);
+            Serial.println(F("Formatting..."));
+            SerialFlash.eraseAll();
+
+            while (!SerialFlash.ready()){
+                digitalWrite(this->_led_pin, HIGH);
+                delay(this->_flash_delay);
+                digitalWrite(this->_led_pin, LOW);
+                delay(this->_flash_delay);
+            }
+
+            Serial.println(F("Done"));            
+            SerialFlash.create( "dummy.txt", 16 );
+            this->_file = SerialFlash.open("dummy.txt");
+            this->_file.write( "NakujaTest", 11 );
+            this->_file.close();
+            
         }
+
+        // check again for FS
+        
 
         // return a list of files currently in the memory
         // if(!SerialFlash.exists("dummy.txt")) {

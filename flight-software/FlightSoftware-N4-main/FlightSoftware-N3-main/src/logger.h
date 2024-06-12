@@ -22,12 +22,14 @@ class DataLogger {
         uint8_t _cs_pin;         // Chip select pin for the SPI flash memory
         uint8_t _led_pin;      // this LED flashes at a 10Hz frequency when the SPI flash chip is foramtting
         char    _filename[20];      // filename of the log file
+        SerialFlashFile _file;
         uint32_t _file_size;    // how large do you want the file 
         uint8_t   _flash_delay = 100; // 100ms delay gives a frequency of 20Hz
         uint8_t _file_pointer = 0;   // pointer to the start of the file- to be used when reading the file 
 
+
     public:
-        DataLogger(uint8_t cs_pin, uint8_t led_pin, char* filename, uint32_t filesize); // constructor
+        DataLogger(uint8_t cs_pin, uint8_t led_pin, char* filename, SerialFlashFile file, uint32_t filesize); // constructor
         bool loggerInit();
         void loggerFormat();
         void loggerInfo();

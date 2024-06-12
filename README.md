@@ -7,11 +7,63 @@ RND for N4 recovery team
 
 ---
 
-(1)
+#### 1. Rocket kinematics (acceleration, velocity)
 
-(2)
+a) Perform accurate calculation of acceleration and velocity from sensor data
 
-(3)
+b) Perform data filtering to get close to ideal simulated data
+
+#### 2. Rocket altitude above ground level (AGL)
+
+a) Determine the rocket's instantaneous AGL during flight
+
+#### 3. Flight state transitions 
+
+a) Accurately switch to the corresponding flight state based on evaluated sensor data 
+
+#### 4. Data logging and storage 
+
+a) Collect and aggregate all sensor data and store it in an external flash memory for post-flight data recovery
+
+b) Perform onboard system logging to indicate all events that occur during flight and store this in a separate system log file
+
+#### 5. Onboard systems diagnostics 
+
+a) Troubleshoot onboard subsystems such as the sensors, batteries etc. and log to the system file 
+
+b) Package the system diagnostics results into telemetry packets for transmission to ground
+
+#### 6. GPS location 
+
+a)  Accurately determine the latitude, longitude and timestamp of the rocket using GPS for post flight recovery
+
+#### 7. Rocket attitude (orientation ) determination
+
+a) Calculate the roll and pitch of the rocket in space during flight 
+
+#### 8. Command and data handling 
+
+a) Receive commands sent from ground station
+
+b) Decode commands sent from ground station
+
+c) Acknowledge and perform command sent from the ground station
+
+#### 9. Telemetry transmission
+
+a) Reliably transmit the rocket's data to the ground station 
+
+b) Perform error detection and correction on the telemetry packets 
+
+#### 10. Video capture and streaming**
+
+a) Capture video stream during flight
+
+b) Record video stream to an onboard SD card for post-flight analysis
+
+b) Transmit video stream to ground**
+
+
 
 ### Tasks and task creation
 
