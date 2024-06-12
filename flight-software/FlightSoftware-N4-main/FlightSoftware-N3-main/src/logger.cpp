@@ -3,7 +3,10 @@
 */
 
 #include "logger.h"
+#include "data-types.h"
 
+
+telemetry_type_t t;
 
 /**
  * 
@@ -50,15 +53,15 @@ void DataLogger::loggerFormat() {
     Serial.println(F("Done"));
 
     // while the flash is formatting, blink the LED at a frequency of 10Hz
-    // while(!SerialFlash.ready()) {
-    //     digitalWrite(this->_led_pin, HIGH);
-    //     delay(_flash_delay);
-    //     digitalWrite(this->_led_pin, LOW);
-    //     delay(_flash_delay);
-    // }
+    while(!SerialFlash.ready()) {
+        digitalWrite(this->_led_pin, HIGH);
+        delay(_flash_delay);
+        digitalWrite(this->_led_pin, LOW);
+        delay(_flash_delay);
+    }
 
     // remain solid lit once formatting is done 
-    // digitalWrite(this->_led_pin, HIGH);
+    digitalWrite(this->_led_pin, HIGH);
 
     this->loggerEquals();
 
@@ -107,14 +110,14 @@ bool DataLogger::loggerInit() {
                     break; // no more files
                 }
             }
-        }
 
-        // create logging file with the provided filename
-        if (!SerialFlash.createErasable(this->_filename, this->_file_size)) {
-            return false;
-        }
+            // create logging file with the provided filename
+            if (!SerialFlash.createErasable(this->_filename, this->_file_size)) {
+                return false;
+            }
 
-        this->loggerEquals(); // prettify
+        }
+        this->loggerEquals(); 
 
         return true;
     }
@@ -145,20 +148,32 @@ bool DataLogger::loggerTest() {
  * in this function, we write the data structs to the file as comma separated values
  * 
 */
-void DataLogger::loggerWrite(){
-    // at this point, the flash memory is ready for writing and reading 
-    // check that the passed struct is not null
-    // if(data == NULL) {
-    //     // do sth here 
-    //     // maybe log error
-    // } else {
-    //     // data valid, ready to proceed
+void DataLogger::loggerWrite(telemetry_type_t* t){
+    // check for invalid pointer 
+    if(t == NULL) {
+        Serial.println("Invalid data");
+    } else {
 
-    // }
+        // Serial.print("FROM LOGGER: ");
+        // Serial.println(t->alt_data.altitude);
 
-    // TODO: check splitting the passed struct into single values 
+        // write the record to the flash chip
+        this->_file.write((uint8_t*)t, sizeof(*t));
+        
+        // at this point, the flash memory is ready for writing and reading 
+        // check that the passed struct is not null
+        // if(data == NULL) {
+        //     // do sth here 
+        //     // maybe log error
+        // } else {
+        //     // data valid, ready to proceed
+        // }
 
-    // TODO: maybe return the size of memory written 
+
+        // TODO: check splitting the passed struct into single values 
+
+        // TODO: maybe return the size of memory written 
+    }
 
 }
 

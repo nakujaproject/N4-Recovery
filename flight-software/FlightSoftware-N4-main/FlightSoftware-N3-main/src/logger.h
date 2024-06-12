@@ -16,6 +16,7 @@
 
 #include <Arduino.h>
 #include <SerialFlash.h>
+#include "data-types.h"
 
 class DataLogger {
     private:
@@ -34,7 +35,7 @@ class DataLogger {
         void loggerFormat();
         void loggerInfo();
         bool loggerTest();
-        void loggerWrite();
+        void loggerWrite(telemetry_type_t*);
         void loggerRead(uint8_t file_pointer, char buffer);
         void loggerSpaces();
         void loggerEquals();

@@ -85,6 +85,20 @@ b) Transmit video stream to ground**
 
 
 
+#### Telemetry packet structure
+
+| Data | Data type | Size | Description |
+| ---- | --------- | ---- | ----------- |
+| ax   |           |      |             |
+| ay   |           |      |             |
+| az   |           |      |             |
+|      |           |      |             |
+|      |           |      |             |
+|      |           |      |             |
+|      |           |      |             |
+|      |           |      |             |
+|      |           |      |             |
+
 
 
 ### Data Logging and storage 
@@ -97,6 +111,8 @@ One is logging to an external SPI flash memory during flight, the WINBOND W25Q32
 For redundancy, we add a microSD card into which data is dumped from the external SPI flash memory POST-FLIGHT.
 
 The logging flowchart is shown below:
+
+![logger-flowchart](./data-logging-and-memory-operations/logger-flowchart.png)
 
 
 

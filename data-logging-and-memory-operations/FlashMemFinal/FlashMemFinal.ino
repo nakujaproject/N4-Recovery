@@ -142,9 +142,9 @@ void checkForSerialCommand() {
         Serial.println(F("START RECORDING"));
         getNextFlashFilename();
         Serial.print( F("Writing to file: " ));
-        Serial.println( filename );
-        SerialFlash.create( filename, FILE_SIZE_512K );
-        file = SerialFlash.open( filename );
+        Serial.println(filename);
+        SerialFlash.create(filename, FILE_SIZE_512K);
+        file = SerialFlash.open(filename);
         fakeTemperature = 12.0;
         fakePressure = 1013.25;
         fakeAcceleration = 1.0;

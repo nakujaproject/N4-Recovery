@@ -17,6 +17,7 @@
 #include <SFE_BMP180.h>
 #include "SerialFlash.h"
 #include "logger.h"
+#include "data-types.h"
 
 /**
  * DEBUG 
@@ -53,41 +54,6 @@ long long previous_time = 0;
 /**
  * ///////////////////////// DATA VARIABLES /////////////////////////
 */
-
-typedef struct Acceleration_Data{
-    float ax;
-    float ay; 
-    float az;
-    float pitch;
-    float roll;
-} accel_type_t;
-
-typedef struct Gyroscope_Data {
-    double gx;
-    double gy;
-    double gz;
-} gyro_type_t;
-
-typedef struct GPS_Data{
-    double latitude;
-    double longitude;; 
-    uint time;
-} gps_type_t;
-
-typedef struct Altimeter_Data{
-    double pressure;
-    double altitude;
-    double velocity;
-    double temperature;
-    double AGL; /* altitude above ground level */
-} altimeter_type_t;
-
-typedef struct Telemetry_Data {
-    accel_type_t acc_data;
-    gyro_type_t gyro_data;
-    gps_type_t gps_data;
-    altimeter_type_t alt_data;
-} telemetry_type_t;
 
 accel_type_t acc_data;
 gyro_type_t gyro_data;
@@ -359,6 +325,20 @@ void debugToTerminal(void* pvParameters){
     }
 }
 
+/**
+ * Task to log the data to flash memory
+ * 
+*/
+void logToMemory(void* pvParameter) {
+    telemetry_type_t received_packet;
+    telemetry_type_t* p_received_packet = &received_packet;
+
+    while(1) {
+        xQueueReceive(telemetry_data_qHandle, &received_packet, portMAX_DELAY);
+        data_logger.loggerWrite(p_received_packet);
+    }
+}
+
 // void transmitTelemetry(void* pvParameters){
 //     /* This function sends data to the ground station */
 
@@ -611,7 +591,7 @@ void setup(){
            "readAltimeter",             /* Function name - for debugging */
            STACK_SIZE,                  /* Stack depth in words */
            NULL,                        /* parameter to be passed to the task */
-           2,        /* Task priority - in thGYROSCOPEis case 1 */
+           2,                           /* Task priority - in this case 1 */
            NULL                         /* task handle that can be passed to other tasks to reference the task */
    ) != pdPASS){
     // if task creation is not successful
@@ -667,18 +647,19 @@ void setup(){
     //     debugln("[+]Transmit task created success");
     // }
 
-    // if(xTaskCreate(
-    //         testMQTT,
-    //         "testMQTT",
-    //         STACK_SIZE,
-    //         NULL,
-    //         1,
-    //         NULL
-    // ) != pdPASS){
-    //     debugln("[-]Test mqtt task failed to create");
-    // }else{
-    //     debugln("[+]Test mqtt task created success");
-    // }
+    /* TASK 4: LOG DATA TO MEMORY */
+    if(xTaskCreate(
+            logToMemory,
+            "logToMemory",
+            STACK_SIZE,
+            NULL,
+            1,
+            NULL
+    ) != pdPASS){
+        debugln("[-]logToMemory task failed to create");
+    }else{
+        debugln("[+]logToMemory task created success");
+    }
 
     // if(xTaskCreate(
     //         flight_state_check,
