@@ -80,63 +80,39 @@ bool DataLogger::loggerInit() {
 
         // init flash LED
         pinMode(this->_led_pin, OUTPUT);
-        digitalWrite(this->_led_pin, HIGH);
-
-        if(SerialFlash.exists("dummy.txt")) {
-            Serial.println(F("FS found"));
-        } else {
-            Serial.println(F("FS not found"));
-            Serial.println(F("Formatting..."));
-            SerialFlash.eraseAll();
-
-            while (!SerialFlash.ready()){
-                digitalWrite(this->_led_pin, HIGH);
-                delay(this->_flash_delay);
-                digitalWrite(this->_led_pin, LOW);
-                delay(this->_flash_delay);
-            }
-
-            Serial.println(F("Done"));            
-            SerialFlash.create( "dummy.txt", 16 );
-            this->_file = SerialFlash.open("dummy.txt");
-            this->_file.write( "NakujaTest", 11 );
-            this->_file.close();
-            
-        }
-
-        // check again for FS
-        
+        digitalWrite(this->_led_pin, HIGH);        
 
         // return a list of files currently in the memory
-        // if(!SerialFlash.exists("dummy.txt")) {
-        //     Serial.println(F("Flash doesn't appear to hold a file system - may need erasing first.")); // TODO: Log to system logger
+        if(!SerialFlash.exists("dummy.txt")) {
+            Serial.println(F("Flash doesn't appear to hold a file system - may need erasing first.")); // TODO: Log to system logger
 
-        //     // format the memory
-        //     // this->loggerFormat();
+            // format the memory
+            this->loggerFormat();
 
-        // } else {
-        //     Serial.println(F("Files currently in flash:"));
-        //     SerialFlash.opendir();
+        } else {
+            Serial.println(F("File system found"));
+            Serial.println(F("Files currently in flash:"));
+            SerialFlash.opendir();
 
-        //     while (1) {
-        //         uint32_t filesize;
-        //         if (SerialFlash.readdir(filename, sizeof(filename), filesize)) {
-        //             Serial.print(filename);
-        //             Serial.print(F("  "));
-        //             Serial.print(filesize);
-        //             Serial.print(F(" bytes"));
-        //             Serial.println();
-        //         }
-        //         else {
-        //             break; // no more files
-        //         }
-        //     }
-        // }
+            while (1) {
+                uint32_t filesize;
+                if (SerialFlash.readdir(filename, sizeof(filename), filesize)) {
+                    Serial.print(filename);
+                    Serial.print(F("  "));
+                    Serial.print(filesize);
+                    Serial.print(F(" bytes"));
+                    Serial.println();
+                }
+                else {
+                    break; // no more files
+                }
+            }
+        }
 
         // create logging file with the provided filename
-        // if (!SerialFlash.createErasable(this->_filename, this->_file_size)) {
-        //     return false;
-        // }
+        if (!SerialFlash.createErasable(this->_filename, this->_file_size)) {
+            return false;
+        }
 
         this->loggerEquals(); // prettify
 

@@ -49,6 +49,7 @@ DataLogger data_logger(cs_pin, flash_led_pin, filename, file,  FILE_SIZE_4M);
 long long current_time = 0;
 long long previous_time = 0;
 
+
 /**
  * ///////////////////////// DATA VARIABLES /////////////////////////
 */
@@ -57,6 +58,8 @@ typedef struct Acceleration_Data{
     float ax;
     float ay; 
     float az;
+    float pitch;
+    float roll;
 } accel_type_t;
 
 typedef struct Gyroscope_Data {
@@ -75,30 +78,22 @@ typedef struct Altimeter_Data{
     double pressure;
     double altitude;
     double velocity;
+    double temperature;
     double AGL; /* altitude above ground level */
 } altimeter_type_t;
 
 typedef struct Telemetry_Data {
-    float ax;
-    float ay; 
-    float az;
-    float gx;
-    float gy; 
-    float gz;
-    int32_t pressure;
-    float altitude;
-    float velocity;
-    float AGL; /* altitude above ground level */
-    double latitude;
-    double longitude;; 
-    uint time;
+    accel_type_t acc_data;
+    gyro_type_t gyro_data;
+    gps_type_t gps_data;
+    altimeter_type_t alt_data;
 } telemetry_type_t;
 
 accel_type_t acc_data;
 gyro_type_t gyro_data;
 gps_type_t gps_data;
 altimeter_type_t altimeter_data;
-telemetry_type_t telemetry_data;
+telemetry_type_t telemetry_packet;
 
 /**
  * ///////////////////////// END OF DATA VARIABLES /////////////////////////
@@ -141,10 +136,10 @@ void BMPInit() {
 /* create queue to store altimeter data
  * store pressure and altitude
  * */
+QueueHandle_t telemetry_data_qHandle;
 QueueHandle_t accel_data_qHandle;
 QueueHandle_t altimeter_data_qHandle;
 // QueueHandle_t gps_data_queue;
-// QueueHandle_t telemetry_data_queue; /* This queue will hold all the sensor data for transmission to ground station*/
 // QueueHandle_t filtered_data_queue;
 // QueueHandle_t flight_states_queue;
 
@@ -172,36 +167,30 @@ QueueHandle_t altimeter_data_qHandle;
 //     mqtt_client.setServer(MQTT_SERVER, MQTT_PORT);
 // }
 
-// read acceleration task
+//////////////////////////// ACCELERATION AND ROCKET ATTITUDE DETERMINATION /////////////////
 void readAccelerationTask(void* pvParameter) {
 
+    telemetry_type_t acc_data_lcl;
+
     while(1) {
-        acc_data.ax = imu.readXAcceleration();
-        acc_data.ay = imu.readYAcceleration();
-        acc_data.az = 0;
-        xQueueSend(accel_data_qHandle, &acc_data, portMAX_DELAY);
+        acc_data_lcl.acc_data.ax = imu.readXAcceleration();
+        acc_data_lcl.acc_data.ay = imu.readYAcceleration();
+        acc_data_lcl.acc_data.az = 0;
+
+        // get pitch and roll
+        acc_data_lcl.acc_data.pitch = imu.getPitch();
+        acc_data_lcl.acc_data.roll = imu.getRoll();
+        
+        xQueueSend(telemetry_data_qHandle, &acc_data_lcl, portMAX_DELAY);
 
     }
 }
 
-/**
- * Task to calulate the orientation of the rocket in terms of the 
- * roll and pitch angles 
-*/
-void calculateOrientationTask(void* pvParameter) {
-    
-    while (1) {
-        float pitch = imu.getPitch();
-        float roll = imu.getRoll();
-
-        debug(pitch);debug(","); debug(roll); debugln();
-    }
-
-}
 
 ///////////////////////// ALTITUDE AND VELOCITY DETERMINATION /////////////////////////
 
 void readAltimeter(void* pvParameters){
+    telemetry_type_t alt_data_lcl;
 
     while(true){    
         // If you want to measure altitude, and not pressure, you will instead need
@@ -223,9 +212,9 @@ void readAltimeter(void* pvParameters){
             status = altimeter.getTemperature(T);
             if(status != 0) {
                 // print out the measurement 
-                Serial.print("temperature: ");
-                Serial.print(T, 2);
-                Serial.print(" \xB0 C, ");
+                // Serial.print("temperature: ");
+                // Serial.print(T, 2);
+                // Serial.print(" \xB0 C, ");
 
                 // start pressure measurement 
                 // The parameter is the oversampling setting, from 0 to 3 (highest res, longest wait).
@@ -245,9 +234,9 @@ void readAltimeter(void* pvParameters){
                     status = altimeter.getPressure(P, T);
                     if(status != 0) {
                         // print out the measurement
-                        Serial.print("absolute pressure: ");
-                        Serial.print(P, 2);
-                        Serial.print(" mb, "); // in millibars
+                        // Serial.print("absolute pressure: ");
+                        // Serial.print(P, 2);
+                        // Serial.print(" mb, "); // in millibars
 
                         p0 = altimeter.sealevel(P,ALTITUDE);
                         // If you want to determine your altitude from the pressure reading,
@@ -256,9 +245,9 @@ void readAltimeter(void* pvParameters){
                         // Result: a = altitude in m.
 
                         a = altimeter.altitude(P, p0);
-                        Serial.print("computed altitude: ");
-                        Serial.print(a, 0);
-                        Serial.print(" meters, ");
+                        // Serial.print("computed altitude: ");
+                        // Serial.print(a, 0);
+                        // Serial.print(" meters, ");
 
                     } else {
                         Serial.println("error retrieving pressure measurement\n");
@@ -281,14 +270,15 @@ void readAltimeter(void* pvParameters){
         // TODO: compute the velocity from the altimeter data
 
         // assign data to queue
-        altimeter_data.pressure = P;
-        altimeter_data.altitude = 0;
-        altimeter_data.velocity = 0;
+        alt_data_lcl.alt_data.pressure = P;
+        alt_data_lcl.alt_data.altitude = a;
+        alt_data_lcl.alt_data.velocity = 0;
+        alt_data_lcl.alt_data.temperature = T;
 
         // send this pressure data to queue
         // do not wait for the queue if it is full because the data rate is so high, 
         // we might lose some data as we wait for the queue to get space
-        xQueueSend(altimeter_data_qHandle, &altimeter_data, 0); 
+        xQueueSend(telemetry_data_qHandle, &alt_data_lcl, 0); 
 
     }
 
@@ -327,15 +317,23 @@ void readAltimeter(void* pvParameters){
 // }
 
 void debugToTerminal(void* pvParameters){
-    accel_type_t rcvd_accel; // accelration received from acceleration_queue
+    telemetry_type_t rcvd_data; // accelration received from acceleration_queue
 
     while(true){
-        if(xQueueReceive(accel_data_qHandle, &rcvd_accel, portMAX_DELAY) == pdPASS){
-            // debugln("--------------accel----------------");
-            debug("x: "); debug(rcvd_accel.ax); debug(" y: "); debug(rcvd_accel.ay); debug(" z: "); debug(rcvd_accel.az); debugln();
-            // debug("roll: "); debug(gyroscope_buffer.gx); debugln();
-            // debug("pitch: "); debug(gyroscope_buffer.gy); debugln();
-            // debug("yaw: "); debug(gyroscope_buffer.gz); debugln();
+        if(xQueueReceive(telemetry_data_qHandle, &rcvd_data, portMAX_DELAY) == pdPASS){
+            // debug CSV to terminal 
+            debug(rcvd_data.acc_data.ax); debug(","); 
+            debug(rcvd_data.acc_data.ay); debug(","); 
+            debug(rcvd_data.acc_data.az); debug(","); 
+            debug(rcvd_data.acc_data.pitch); debug(","); 
+            debug(rcvd_data.acc_data.roll); debug(","); 
+            debug(rcvd_data.alt_data.pressure); debug(","); 
+            debug(rcvd_data.alt_data.velocity); debug(","); 
+            debug(rcvd_data.alt_data.altitude); debug(","); 
+            debug(rcvd_data.alt_data.temperature); debug(","); 
+
+            debugln();
+
         }else{
             /* no queue */
         }
@@ -507,13 +505,8 @@ void setup(){
     /* Setup GPS*/
     // hard.begin(9600, SERIAL_8N1, RX, TX);
 
-    /* initialize the data logging system */
+    /* initialize the data logging system - logs to flash memory */
     data_logger.loggerInit();
-
-    /* DEBUG: set up state simulation leds */
-    // for(auto pin: state_leds){
-    //     pinMode(state_leds[pin], OUTPUT);
-    // }
 
     /* connect to WiFi*/
     // connectToWifi();
@@ -539,7 +532,8 @@ void setup(){
     // this queue hold the data read from the BMP180
     altimeter_data_qHandle = xQueueCreate(ALTIMETER_QUEUE_LENGTH, sizeof(altimeter_type_t)); 
 
-    // assert(accel_data_qHandle != nullptr);
+    // this queue holds the telemetry data packet
+    telemetry_data_qHandle = xQueueCreate(TELEMETRY_DATA_QUEUE_LENGTH, sizeof(telemetry_packet));
 
     // /* create altimeter_data_queue */   
     // altimeter_data_queue = xQueueCreate(ALTIMETER_QUEUE_LENGTH, sizeof(struct Altimeter_Data));
@@ -642,32 +636,22 @@ void setup(){
     // }
 
     /* TASK 3: DISPLAY DATA ON SERIAL MONITOR - FOR DEBUGGING */
-    // th = xTaskCreatePinnedToCore(
-    //         debugToTerminal,
-    //         "displayData",
-    //         STACK_SIZE,
-    //         NULL,
-    //         1,
-    //         NULL,
-    //         app_id
-    //         );
-        
-    // if(th == pdPASS) {
-    //     Serial.println("Task created");
-    // } else {
-    //     Serial.println("Task not created");
-    // }
-
-    /* task to calculate rocket orientation */
     th = xTaskCreatePinnedToCore(
-        calculateOrientationTask,
-        "calcOrientation",
-        STACK_SIZE,
-        NULL,
-        1,
-        NULL,
-        app_id
-    );
+            debugToTerminal,
+            "displayData",
+            STACK_SIZE,
+            NULL,
+            1,
+            NULL,
+            app_id
+            );
+        
+    if(th == pdPASS) {
+        Serial.println("Task created");
+    } else {
+        Serial.println("Task not created");
+    }
+
 
     /* TASK 4: TRANSMIT TELEMETRY DATA */
     // if(xTaskCreate(
