@@ -117,6 +117,7 @@ bool DataLogger::loggerInit() {
             }
 
         }
+        
         this->loggerEquals(); 
 
         return true;
@@ -168,9 +169,6 @@ void DataLogger::loggerWrite(telemetry_type_t* t){
         // } else {
         //     // data valid, ready to proceed
         // }
-
-
-        // TODO: check splitting the passed struct into single values 
 
         // TODO: maybe return the size of memory written 
     }

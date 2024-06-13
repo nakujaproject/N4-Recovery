@@ -87,17 +87,30 @@ b) Transmit video stream to ground**
 
 #### Telemetry packet structure
 
-| Data | Data type | Size | Description |
-| ---- | --------- | ---- | ----------- |
-| ax   |           |      |             |
-| ay   |           |      |             |
-| az   |           |      |             |
-|      |           |      |             |
-|      |           |      |             |
-|      |           |      |             |
-|      |           |      |             |
-|      |           |      |             |
-|      |           |      |             |
+| Data                  | Data type | Size (bytes) | Description                                              |
+| --------------------- | --------- | ------------ | -------------------------------------------------------- |
+| state                 | uint8_t   | 1            | current flight state                                     |
+| flight_mode           | uint8_t   | 1            | current flight mode, whether SAFE or ARMED               |
+| ax                    | float     | 4            | acceleration in the x-axis (m/s^2)                       |
+| ay                    | float     | 4            | acceleration in the y-axis (m/s^2)                       |
+| az                    | float     | 4            | acceleration in the z-axis (m/s^2)                       |
+| pitch                 | float     | 4            | pitch angle (deg)                                        |
+| roll                  | float     | 4            | roll angle (deg)                                         |
+| gx                    | float     | 4            | angular velocity along the x-axis (deg/sec)              |
+| gy                    | float     | 4            | angular velocity along the y-axis (deg/sec)              |
+| gz                    | float     | 4            | angular velocity along the z-axis (deg/sec)              |
+| latitude              | double    | 8            | geographical distance N or S of equator (deg)            |
+| longitude             | double    | 8            | geographical distance E or W of Greenwich Meridian (deg) |
+| gps_altitude          | uint16_t  | 2            | altitude read by the onboard GPS (m)                     |
+| gps_time              | time_t    | 4            | current time from the GPS (UTC)                          |
+| pressure              | float     | 4            | pressure from the altimeter (mb)                         |
+| temperature           | uint8_t   | 1            | temperature from the altimeter (deg C)                   |
+| altitude_agl          | uint16_t  | 2            | height above ground level                                |
+| velocity              | float     | 4            | velocity derived from the altimeter                      |
+| pyro1_state           | uint8_t   | 1            | state of main chute pyro (whether ejected or active)     |
+| pyro2_state           | uint8_t   | 1            | state of drogue chute pyro (whether ejected or active)   |
+|                       |           |              |                                                          |
+| **Total packet size** |           | **69 BYTES** |                                                          |
 
 
 
