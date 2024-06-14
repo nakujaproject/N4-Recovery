@@ -7,7 +7,7 @@
 
 
 telemetry_type_t t;
-char pckt_buff[100];
+char pckt_buff[50];
 
 /**
  * 
@@ -112,11 +112,16 @@ bool DataLogger::loggerInit() {
                 }
             }
 
+            uint8_t file_create_status = SerialFlash.create(this->_filename, this->_file_size);
+
             // create logging file with the provided filename
-            if (!SerialFlash.createErasable(this->_filename, this->_file_size)) {
+            if (!file_create_status) {
+                Serial.println(F("Failed to create file"));
                 return false;
+
             } else {
                 // open the created file 
+                Serial.println(F("Created flight bin file"));
                 this->_file = SerialFlash.open(this->_filename);
             }
 
@@ -160,14 +165,42 @@ void DataLogger::loggerWrite(telemetry_type_t packet){
 
     // write the record to the flash chip
     
-    sprintf(pckt_buff, "%f,%f,%f,%f,%f",
+    sprintf(pckt_buff, "%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\n",
             packet.acc_data.ax,
             packet.acc_data.ay,
             packet.acc_data.az,
             packet.acc_data.pitch,
-            packet.acc_data.roll);
-    Serial.println(pckt_buff);
+            packet.acc_data.roll,
+            packet.alt_data.pressure);
+            
     this->_file.write((uint8_t*)&packet, sizeof(packet));
+
+    Serial.print( packet.record_number );
+    Serial.print( "," );
+    Serial.print( packet.acc_data.ax );
+    Serial.print( "," );
+    Serial.print( packet.acc_data.ay );
+    Serial.print( "," );
+    Serial.print( packet.acc_data. az );
+    Serial.print( "," );
+    Serial.print( packet.acc_data.pitch );
+    Serial.print( "," );
+    Serial.print( packet.acc_data.roll );
+    Serial.print( "," );
+    Serial.print( packet.gyro_data.gx );
+    Serial.print( "," );
+    Serial.print( packet.gyro_data.gy );
+    Serial.print( "," );
+    Serial.print( packet.gyro_data.gz );
+    Serial.print( "," );
+    Serial.print( packet.alt_data.altitude );
+    Serial.print( "," );
+    Serial.print( packet.alt_data.velocity );
+    Serial.print( "," );
+    Serial.print( packet.alt_data.pressure );
+    Serial.print( "," );
+    Serial.println( packet.alt_data.temperature );
+
     // Serial.println(F("logged"));
     
     // at this point, the flash memory is ready for writing and reading 
@@ -180,7 +213,6 @@ void DataLogger::loggerWrite(telemetry_type_t packet){
     // }
 
     // TODO: maybe return the size of memory written 
-
 
 }
 

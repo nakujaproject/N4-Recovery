@@ -64,12 +64,14 @@ void showMenu() {
 void dumpOneRecording() {
   Serial.println(F("\n================ Flight data ================"));
   file = SerialFlash.open( "flight1.bin" );
+//  file = SerialFlash.open( "flight.bin" );
 
   Serial.print(F("Files Found: ")); Serial.println(file);
 
   if (file) {
     Serial.print( F("Contents of file: ") );
     Serial.println( F("flight1.bin" ));
+//    Serial.println( F("flight.bin" ));
     
     // print out the headings
     Serial.println(F("ax,ay,az,pitch,roll,gx,gy,gz,alt,velocity,pressure,temp"));

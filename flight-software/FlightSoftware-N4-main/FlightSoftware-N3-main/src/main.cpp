@@ -39,11 +39,13 @@ TinyGPSPlus gps;
 /* Flight data logging */
 uint8_t cs_pin = 5;
 uint8_t flash_led_pin = 4;
-char filename[] = "flight1.bin";    // Filename must be less than 20 chars, including the file extension
+char filename[] = "flight.bin";    // Filename must be less than 20 chars, including the file extension
 uint32_t FILE_SIZE_512K = 524288L;  // 512KB
 uint32_t FILE_SIZE_1M  = 1048576L;  // 1MB
 uint32_t FILE_SIZE_4M  = 4194304L;  // 4MB
 SerialFlashFile file;
+unsigned long long previous_log_time = 0, current_log_time = 0;
+uint16_t log_sample_interval = 10; // log data to flash every 10 ms
 DataLogger data_logger(cs_pin, flash_led_pin, filename, file,  FILE_SIZE_4M);
 
 /* position integration variables */
@@ -336,7 +338,15 @@ void logToMemory(void* pvParameter) {
     while(1) {
         xQueueReceive(telemetry_data_qHandle, &received_packet, portMAX_DELAY);
         // received_packet.record_number++; 
-        data_logger.loggerWrite(received_packet);
+
+        // is it time to record?
+        current_log_time = millis();
+
+        if(current_log_time - previous_log_time > log_sample_interval) {
+            previous_log_time = current_log_time;
+            data_logger.loggerWrite(received_packet);
+        }
+        
     }
 
 }
