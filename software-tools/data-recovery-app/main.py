@@ -98,6 +98,18 @@ class App(ctk.CTk):
         print(self.baud)
         print(self.output_file)
 
+        # connect to serial
+        try:
+            self.ser = serial.Serial(self.port)
+            if self.ser:
+                print("Connected to " + self.port)
+                self.serial_connection_label.configure(text = "Connected to " + self.port)
+            else: 
+                print("Could not connect to " + self.port)
+        except serial.SerialException:
+            print("Could not connect to serial port")
+        
+
     def createWidgets(self):
         """
         Create window widgets
@@ -145,6 +157,11 @@ class App(ctk.CTk):
         self.mybutton = ctk.CTkButton(self, text = 'DUMP', font=("Inter", 14), command = self.dump)
         self.mybutton.grid(row = 4, column = 1,
                            padx = 10, pady = 10)
+
+        # status labels 
+        self.serial_connection_label = ctk.CTkLabel(self, text="")
+        self.serial_connection_label.grid(row = 5, column = 0, columnspan = 3, 
+                                          pady = 20, padx = 20)
 
 
 if __name__ == "__main__":
