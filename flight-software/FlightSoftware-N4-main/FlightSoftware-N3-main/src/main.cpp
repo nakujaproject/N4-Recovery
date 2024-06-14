@@ -26,6 +26,13 @@
  * 
  */
 
+/**
+ * Flight modes
+ * 0 - SAFE mode
+ * 1 - ARMED mode
+*/
+uint8_t operation_mode = 0;
+
 /* create Wi-Fi Client */
 WiFiClient wifi_client;
 
@@ -141,7 +148,10 @@ void readAccelerationTask(void* pvParameter) {
     telemetry_type_t acc_data_lcl;
 
     while(1) {
+        acc_data_lcl.operation_mode = operation_mode; // TODO: move these to check state function
         acc_data_lcl.record_number++;
+        acc_data_lcl.state = 0;
+        
         acc_data_lcl.acc_data.ax = imu.readXAcceleration();
         acc_data_lcl.acc_data.ay = imu.readYAcceleration();
         acc_data_lcl.acc_data.az = 0;

@@ -91,7 +91,7 @@ b) Transmit video stream to ground**
 | --------------------- | --------- | ------------ | -------------------------------------------------------- |
 | record_number         | uint32_t  | 4            | record number count                                      |
 | state                 | uint8_t   | 1            | current flight state                                     |
-| flight_mode           | uint8_t   | 1            | current flight mode, whether SAFE or ARMED               |
+| operation_mode        | uint8_t   | 1            | current flight mode, whether SAFE or ARMED               |
 | ax                    | float     | 4            | acceleration in the x-axis (m/s^2)                       |
 | ay                    | float     | 4            | acceleration in the y-axis (m/s^2)                       |
 | az                    | float     | 4            | acceleration in the z-axis (m/s^2)                       |

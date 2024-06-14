@@ -38,6 +38,8 @@ typedef struct Altimeter_Data{
 
 typedef struct Telemetry_Data {
     uint32_t record_number;
+    uint8_t operation_mode;
+    uint8_t state;
     accel_type_t acc_data;
     gyro_type_t gyro_data;
     gps_type_t gps_data;

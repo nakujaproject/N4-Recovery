@@ -74,7 +74,7 @@ void dumpOneRecording() {
 //    Serial.println( F("flight.bin" ));
     
     // print out the headings
-    Serial.println(F("ax,ay,az,pitch,roll,gx,gy,gz,alt,velocity,pressure,temp"));
+    Serial.println(F("record_number,operation_mode,state,ax,ay,az,pitch,roll,gx,gy,gz,alt,velocity,pressure,temp"));
     
     do {
       file.read( (uint8_t *)&oneRecord, sizeof(oneRecord) );
@@ -82,6 +82,12 @@ void dumpOneRecording() {
       // library doesn't know where end of actual written data is so we have
       // to look for it ourselves!
       if ( oneRecord.record_number != 0xFFFFFFFF ) {
+        Serial.print( oneRecord.record_number );
+        Serial.print( "," );
+        Serial.print( oneRecord.operation_mode );
+        Serial.print( "," );
+        Serial.print( oneRecord.state );
+        Serial.print( "," );
         Serial.print( oneRecord.acc_data.ax );
         Serial.print( "," );
         Serial.print( oneRecord.acc_data.ay );

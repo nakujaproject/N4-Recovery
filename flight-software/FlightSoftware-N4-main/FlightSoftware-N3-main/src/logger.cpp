@@ -172,10 +172,14 @@ void DataLogger::loggerWrite(telemetry_type_t packet){
             packet.acc_data.pitch,
             packet.acc_data.roll,
             packet.alt_data.pressure);
-            
+
     this->_file.write((uint8_t*)&packet, sizeof(packet));
 
     Serial.print( packet.record_number );
+    Serial.print( "," );
+    Serial.print( packet.operation_mode );
+    Serial.print( "," );
+    Serial.print( packet.state );
     Serial.print( "," );
     Serial.print( packet.acc_data.ax );
     Serial.print( "," );
