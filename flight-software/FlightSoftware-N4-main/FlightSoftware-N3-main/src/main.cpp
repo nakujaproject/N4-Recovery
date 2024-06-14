@@ -139,6 +139,7 @@ void readAccelerationTask(void* pvParameter) {
     telemetry_type_t acc_data_lcl;
 
     while(1) {
+        acc_data_lcl.record_number++;
         acc_data_lcl.acc_data.ax = imu.readXAcceleration();
         acc_data_lcl.acc_data.ay = imu.readYAcceleration();
         acc_data_lcl.acc_data.az = 0;
@@ -331,12 +332,13 @@ void debugToTerminal(void* pvParameters){
 */
 void logToMemory(void* pvParameter) {
     telemetry_type_t received_packet;
-    telemetry_type_t* p_received_packet = &received_packet;
 
     while(1) {
         xQueueReceive(telemetry_data_qHandle, &received_packet, portMAX_DELAY);
-        data_logger.loggerWrite(p_received_packet);
+        // received_packet.record_number++; 
+        data_logger.loggerWrite(received_packet);
     }
+
 }
 
 // void transmitTelemetry(void* pvParameters){
@@ -616,21 +618,21 @@ void setup(){
     // }
 
     /* TASK 3: DISPLAY DATA ON SERIAL MONITOR - FOR DEBUGGING */
-    th = xTaskCreatePinnedToCore(
-            debugToTerminal,
-            "displayData",
-            STACK_SIZE,
-            NULL,
-            1,
-            NULL,
-            app_id
-            );
+    // th = xTaskCreatePinnedToCore(
+    //         debugToTerminal,
+    //         "displayData",
+    //         STACK_SIZE,
+    //         NULL,
+    //         1,
+    //         NULL,
+    //         app_id
+    //         );
         
-    if(th == pdPASS) {
-        Serial.println("Task created");
-    } else {
-        Serial.println("Task not created");
-    }
+    // if(th == pdPASS) {
+    //     Serial.println("Task created");
+    // } else {
+    //     Serial.println("Task not created");
+    // }
 
 
     /* TASK 4: TRANSMIT TELEMETRY DATA */

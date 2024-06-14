@@ -89,6 +89,7 @@ b) Transmit video stream to ground**
 
 | Data                  | Data type | Size (bytes) | Description                                              |
 | --------------------- | --------- | ------------ | -------------------------------------------------------- |
+| record_number         | uint32_t  | 4            | record number count                                      |
 | state                 | uint8_t   | 1            | current flight state                                     |
 | flight_mode           | uint8_t   | 1            | current flight mode, whether SAFE or ARMED               |
 | ax                    | float     | 4            | acceleration in the x-axis (m/s^2)                       |
@@ -109,8 +110,9 @@ b) Transmit video stream to ground**
 | velocity              | float     | 4            | velocity derived from the altimeter                      |
 | pyro1_state           | uint8_t   | 1            | state of main chute pyro (whether ejected or active)     |
 | pyro2_state           | uint8_t   | 1            | state of drogue chute pyro (whether ejected or active)   |
+| battery_voltage       | uint8_t   | 1            | voltage of the battery during flight                     |
 |                       |           |              |                                                          |
-| **Total packet size** |           | **69 BYTES** |                                                          |
+| **Total packet size** |           | **74 BYTES** |                                                          |
 
 
 

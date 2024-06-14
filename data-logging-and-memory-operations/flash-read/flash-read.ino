@@ -4,17 +4,24 @@
  */
 
 #include <SerialFlash.h>
+#include "data-types.h"
 
 const byte PIN_FLASH_CS = 5; // Change this to match the Chip Select pin on your board
 SerialFlashFile file;
+uint8_t dumpFileNumber = 1;
+
+// telemetry packet
+telemetry_type_t oneRecord;
 
 void setup() {
   Serial.begin(115200);
   if(!SerialFlash.begin(PIN_FLASH_CS)) {
-    Serial.println(f("Flash not found! Check wiring."));
+    Serial.println(F("Flash not found! Check wiring."));
   }
 
   Serial.println(F("Flash memory found!"));
+
+  showMenu();
   
 }
 
@@ -35,8 +42,6 @@ void checkForSerialCommand() {
         break;
         
       case 'd':
-        // d = just dump the next recording
-        isRecording = false;
         dumpOneRecording();
         dumpFileNumber++;
         showMenu();
@@ -58,34 +63,48 @@ void showMenu() {
 // generate a CSV formatted output of one flight's worth of recordings
 void dumpOneRecording() {
   Serial.println(F("\n================ Flight data ================"));
+  file = SerialFlash.open( "flight1.bin" );
 
-  sprintf( filename, "flight1.bin");
-  file = SerialFlash.open( filename );
+  Serial.print(F("Files Found: ")); Serial.println(file);
 
   if (file) {
     Serial.print( F("Contents of file: ") );
-    Serial.println( filename );
+    Serial.println( F("flight1.bin" ));
     
     // print out the headings
-    Serial.println(F("Rec Num,Timestamp,Temp,Press,Accel"));
+    Serial.println(F("ax,ay,az,pitch,roll,gx,gy,gz,alt,velocity,pressure,temp"));
     
     do {
       file.read( (uint8_t *)&oneRecord, sizeof(oneRecord) );
 
       // library doesn't know where end of actual written data is so we have
       // to look for it ourselves!
-      if ( oneRecord.recordNumber != 0xFFFFFFFF ) {
-        Serial.print( oneRecord.recordNumber );
+      if ( oneRecord.record_number != 0xFFFFFFFF ) {
+        Serial.print( oneRecord.acc_data.ax );
         Serial.print( "," );
-        Serial.print( oneRecord.timeStamp );
+        Serial.print( oneRecord.acc_data.ay );
         Serial.print( "," );
-        Serial.print( oneRecord.temperature );
+        Serial.print( oneRecord.acc_data. az );
         Serial.print( "," );
-        Serial.print( oneRecord.pressure );
+        Serial.print( oneRecord.acc_data.pitch );
         Serial.print( "," );
-        Serial.println( oneRecord.acceleration );
+        Serial.print( oneRecord.acc_data.roll );
+        Serial.print( "," );
+        Serial.print( oneRecord.gyro_data.gx );
+        Serial.print( "," );
+        Serial.print( oneRecord.gyro_data.gy );
+        Serial.print( "," );
+        Serial.print( oneRecord.gyro_data.gz );
+        Serial.print( "," );
+        Serial.print( oneRecord.alt_data.altitude );
+        Serial.print( "," );
+        Serial.print( oneRecord.alt_data.velocity );
+        Serial.print( "," );
+        Serial.print( oneRecord.alt_data.pressure );
+        Serial.print( "," );
+        Serial.println( oneRecord.alt_data.temperature );
       }
-    } while ( oneRecord.recordNumber != 0xFFFFFFFF );
+    } while ( oneRecord.record_number != 0xFFFFFFFF );
     file.close();
   }
   else {

@@ -7,6 +7,7 @@
 
 
 telemetry_type_t t;
+char pckt_buff[100];
 
 /**
  * 
@@ -114,6 +115,9 @@ bool DataLogger::loggerInit() {
             // create logging file with the provided filename
             if (!SerialFlash.createErasable(this->_filename, this->_file_size)) {
                 return false;
+            } else {
+                // open the created file 
+                this->_file = SerialFlash.open(this->_filename);
             }
 
         }
@@ -149,29 +153,34 @@ bool DataLogger::loggerTest() {
  * in this function, we write the data structs to the file as comma separated values
  * 
 */
-void DataLogger::loggerWrite(telemetry_type_t* t){
-    // check for invalid pointer 
-    if(t == NULL) {
-        Serial.println("Invalid data");
-    } else {
+void DataLogger::loggerWrite(telemetry_type_t packet){
 
-        // Serial.print("FROM LOGGER: ");
-        // Serial.println(t->alt_data.altitude);
+    // Serial.print("FROM LOGGER: ");
+    // Serial.println(t->alt_data.altitude);
 
-        // write the record to the flash chip
-        this->_file.write((uint8_t*)t, sizeof(*t));
-        
-        // at this point, the flash memory is ready for writing and reading 
-        // check that the passed struct is not null
-        // if(data == NULL) {
-        //     // do sth here 
-        //     // maybe log error
-        // } else {
-        //     // data valid, ready to proceed
-        // }
+    // write the record to the flash chip
+    
+    sprintf(pckt_buff, "%f,%f,%f,%f,%f",
+            packet.acc_data.ax,
+            packet.acc_data.ay,
+            packet.acc_data.az,
+            packet.acc_data.pitch,
+            packet.acc_data.roll);
+    Serial.println(pckt_buff);
+    this->_file.write((uint8_t*)&packet, sizeof(packet));
+    // Serial.println(F("logged"));
+    
+    // at this point, the flash memory is ready for writing and reading 
+    // check that the passed struct is not null
+    // if(data == NULL) {
+    //     // do sth here 
+    //     // maybe log error
+    // } else {
+    //     // data valid, ready to proceed
+    // }
 
-        // TODO: maybe return the size of memory written 
-    }
+    // TODO: maybe return the size of memory written 
+
 
 }
 

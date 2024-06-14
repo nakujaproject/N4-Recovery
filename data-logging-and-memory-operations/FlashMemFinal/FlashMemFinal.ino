@@ -182,7 +182,10 @@ void showMenu() {
 void dumpOneRecording() {
   Serial.println(F("\nDUMP ONE RECORDING"));
 
-  sprintf( filename, "flt%02d.bin", dumpFileNumber );
+//  sprintf( filename, "flt%02d.bin", dumpFileNumber );
+//  file = SerialFlash.open( filename );
+
+  sprintf( filename, "flight1.bin");
   file = SerialFlash.open( filename );
 
   if (file) {
