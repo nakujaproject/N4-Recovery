@@ -209,9 +209,41 @@ We read GPS data using the [TinyGPSPlus Library](https://github.com/mikalhart/Ti
 4. Read the latitude, longitude, time and altitude into the ```gps_type_t``` variable
 5. Send this data to ```telemetry_queue```
 
+#### GPS  fix time issues
+
+The start of GPS can be cold or warm. Cold start means the GPS is starting from scratch, no prior satellite data exists, and here it takes much time to lock satellites and download satellite data. Once you initially download satellite data, the following connections take less time, referred to as warm-starts.
+
+When using GPS, you will find that the time it takes to acquire a fix to GPS satellites depends on the cloud cover. If the cloud cover is too high, it takes longer to acquire a signal and vice-versa. During one of the tests of the GPS, it took ~2 min at 45% cloud cover to acquire signal. 
+
+During launch, we do not want to wait for infinity to get a GPS lock, so we implement a timeout as follows:
+
+```c
+Consider the GPS_WAIT_TIME as 2 minutes (2000ms):
+
+1. Initialize a timeout variable and a lock_acquired boolean value
+2. Check the value of the timeout_variable
+3. Is it less than the GPS_WAIT_TIME?
+4. If less than the wait time,  continue waiting for GPS fix, if more than the GPS_WAIT_TIME, stop waiting for fix and return false
+5. If the GPS data is available and successfully encoded via serial, set the lock_acquired booelan value to true
+```
+
+This timeout will ensure we do not delay other sub-systems of the flight software from starting.
+
+##### Flowchart 
+
+![gps-flowchart](./images/gps-lock-flow.png)
+
+
+
 #### GPS tests
 
 The following screenshots show the results of GPS tests during development. In the image below, the raw GPS coordinates are read and printed on the serial debugger:
+
+![gps-data](./images/gps-test-altitude.png)
+
+
+
+
 
 
 

@@ -3,11 +3,13 @@
 void GPSInit();
 void dumpGPSData();
 
+#define GPS_WAIT_TIME 2000 // wait for 2 mins to acquire GPS lock
+uint8_t lock_acquired = 0;
 unsigned long previous_time=0, current_time = 0;
-uint16_t interval = 1500; // GPS sample time
+uint16_t interval = 250; // GPS sample time
 
 TinyGPSPlus gps;
-bool newdata = false;
+uint8_t newdata = 0;
 
 typedef struct {
   double latitude;
@@ -80,7 +82,9 @@ void dumpGPSData() {
     alt = gps.altitude.meters();
 
     Serial.println(alt);
-  }  
+  }  else {
+    Serial.println("Invalid altitude data");
+  }
   
 }
 
@@ -96,15 +100,26 @@ void loop() {
     previous_time = current_time;
 
     if(Serial2.available()) {
-     char c = Serial2.read();
-     // Serial.print(c);
+      
+      char c = Serial2.read();
+//      Serial.print(c);
 
       if(gps.encode(c)) {
-        newdata = true;
+        lock_acquired = 1; // GPS lock acquired
+        newdata = 1; // new data acquired
       }
-     }
+          
+    }  else { 
+      // TODO: implement timeout for acquiring GPS signaal
+      Serial.println("Waiting for GPS");
+      
+    }
 
-    if(newdata) {
+    // check for GPS lock 
+    Serial.print("LOCK: "); Serial.println(lock_acquired);
+    Serial.print("NEWDATA: "); Serial.println(newdata);
+    
+    if(newdata) { // TODO: check for GPS_LOCK
       Serial.println("Acquired data");
       Serial.println("---------------");
       dumpGPSData();
