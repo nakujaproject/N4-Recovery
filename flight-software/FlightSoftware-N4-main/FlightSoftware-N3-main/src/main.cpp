@@ -8,8 +8,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <WiFi.h>
-#include <PubSubClient.h>
-#include <TinyGPS++.h>
+#include <PubSubClient.h> // TODO: ADD A MQTT SWITCH - TO USE MQTT OR NOT
 #include "sensors.h"
 #include "defs.h"
 #include "state_machine.h"
@@ -18,6 +17,7 @@
 #include "SerialFlash.h"
 #include "logger.h"
 #include "data-types.h"
+#include <TinyGPSPlus.h>
 
 /**
  * DEBUG 
@@ -39,8 +39,7 @@ WiFiClient wifi_client;
 /* create MQTT publish-subscribe client */
 PubSubClient mqtt_client(wifi_client);
 
-/* GPS Setup*/
-HardwareSerial hard(2);
+/* GPS object */
 TinyGPSPlus gps;
 
 /* Flight data logging */
@@ -114,7 +113,7 @@ void BMPInit() {
 QueueHandle_t telemetry_data_qHandle;
 QueueHandle_t accel_data_qHandle;
 QueueHandle_t altimeter_data_qHandle;
-// QueueHandle_t gps_data_queue;
+QueueHandle_t gps_data_qHandle;
 // QueueHandle_t filtered_data_queue;
 // QueueHandle_t flight_states_queue;
 
@@ -151,7 +150,7 @@ void readAccelerationTask(void* pvParameter) {
         acc_data_lcl.operation_mode = operation_mode; // TODO: move these to check state function
         acc_data_lcl.record_number++;
         acc_data_lcl.state = 0;
-        
+
         acc_data_lcl.acc_data.ax = imu.readXAcceleration();
         acc_data_lcl.acc_data.ay = imu.readYAcceleration();
         acc_data_lcl.acc_data.az = 0;
@@ -168,7 +167,7 @@ void readAccelerationTask(void* pvParameter) {
 
 ///////////////////////// ALTITUDE AND VELOCITY DETERMINATION /////////////////////////
 
-void readAltimeter(void* pvParameters){
+void readAltimeterTask(void* pvParameters){
     telemetry_type_t alt_data_lcl;
 
     while(true){    
@@ -257,59 +256,60 @@ void readAltimeter(void* pvParameters){
         // send this pressure data to queue
         // do not wait for the queue if it is full because the data rate is so high, 
         // we might lose some data as we wait for the queue to get space
-        xQueueSend(telemetry_data_qHandle, &alt_data_lcl, 0); 
+        xQueueSend(telemetry_data_qHandle, &alt_data_lcl, 0); // TODO: CHECK SUCCESS SENDING TO QUEUE
 
     }
 
 }
 
+/**
+ * 
+ * Read the GPS location data and append to telemetry packet for transmission
+ * 
+*/
+void readGPSTask(void* pvParameters){
 
-// void readGPS(void* pvParameters){
-//     /* This function reads GPS data and sends it to the ground station */
-//     struct GPS_Data gps_data;
-//     while(true){
-//         while (hard.available() > 0)
-//         {
-//             gps.encode(hard.read());
-//         }
-//         if (gps.location.isUpdated()){
-//             gps_data.latitude = gps.location.lat();
-//             gps_data.longitude = gps.location.lng();
-//             gps_data.time = gps.time.value();
-//             fallBackLat = gps_data.latitude;
-//             fallBackLong = gps_data.longitude;
-//             debugln("[!!] GPS Data Received [!!]");
-//             if(xQueueSend(gps_data_queue, &gps_data, portMAX_DELAY) != pdPASS){
-//                 debugln("[-]GPS queue full");
-//             }
-//             // delay(TASK_DELAY);
-//         }else{
-//             gps_data.latitude = fallBackLat;
-//             gps_data.longitude = fallBackLong;
-//             gps_data.time = 20230601;
-//             if(xQueueSend(gps_data_queue, &gps_data, portMAX_DELAY) != pdPASS){
-//                 debugln("[-]GPS queue full");
-//             }
-//             // delay(TASK_DELAY);
-//         }
-//     }
-// }
+    telemetry_type_t gps_data_lcl;
 
-void debugToTerminal(void* pvParameters){
+    while(true){
+        debugln("Waiting for GPS");
+        
+        if (gps.location.isUpdated()){
+            gps_data_lcl.gps_data.latitude = gps.location.lat();
+            gps_data_lcl.gps_data.longitude = gps.location.lng();
+            gps_data_lcl.gps_data.time = gps.time.value();
+            
+            if(xQueueSend(telemetry_data_qHandle, &gps_data_lcl, portMAX_DELAY) != pdPASS){
+                debugln("[-]GPS queue full"); // TODO: LOG TO SYSTEM LOGGER
+            } else {
+                debugln("Sent to GPS Queue"); // TODO: LOG TO SYSTEM LOGGER
+            }
+
+        }
+
+    }
+
+}
+
+void debugToTerminalTask(void* pvParameters){
     telemetry_type_t rcvd_data; // accelration received from acceleration_queue
 
     while(true){
         if(xQueueReceive(telemetry_data_qHandle, &rcvd_data, portMAX_DELAY) == pdPASS){
             // debug CSV to terminal 
-            debug(rcvd_data.acc_data.ax); debug(","); 
-            debug(rcvd_data.acc_data.ay); debug(","); 
-            debug(rcvd_data.acc_data.az); debug(","); 
-            debug(rcvd_data.acc_data.pitch); debug(","); 
-            debug(rcvd_data.acc_data.roll); debug(","); 
-            debug(rcvd_data.alt_data.pressure); debug(","); 
-            debug(rcvd_data.alt_data.velocity); debug(","); 
-            debug(rcvd_data.alt_data.altitude); debug(","); 
-            debug(rcvd_data.alt_data.temperature); debug(","); 
+            // debug(rcvd_data.acc_data.ax); debug(","); 
+            // debug(rcvd_data.acc_data.ay); debug(","); 
+            // debug(rcvd_data.acc_data.az); debug(","); 
+            // debug(rcvd_data.acc_data.pitch); debug(","); 
+            // debug(rcvd_data.acc_data.roll); debug(","); 
+            // debug(rcvd_data.alt_data.pressure); debug(","); 
+            // debug(rcvd_data.alt_data.velocity); debug(","); 
+            // debug(rcvd_data.alt_data.altitude); debug(","); 
+            // debug(rcvd_data.alt_data.temperature); debug(","); 
+
+            debug(rcvd_data.gps_data.latitude); debug(","); 
+            debug(rcvd_data.gps_data.longitude); debug(","); 
+            debug(rcvd_data.gps_data.time); debug(","); 
 
             debugln();
 
@@ -462,50 +462,12 @@ void logToMemory(void* pvParameter) {
 // }
 
 
-// void flight_state_check(void* pvParameters){
-//     /* Set flight state based on sensor values */
-//     int32_t flight_state = PRE_FLIGHT;
-//     struct Altimeter_Data altimeter_data_receive;
-//     while(true){
-//         if(xQueueReceive(altimeter_data_queue, &altimeter_data_receive, portMAX_DELAY) == pdPASS){
-//             debugln("[+]Altimeter data in state machine");
-
-//             /*------------- STATE MACHINE -------------------------------------*/
-//             flight_state = fsm.checkState(altimeter_data_receive.altitude, altimeter_data_receive.velocity);
-
-//             /*------------- DEPLOY PARACHUTE ALGORITHM -------------------------------------*/
-//             if(flight_state>=POWERED_FLIGHT){//start countdown to ejection
-//                 if(offset_flag){
-//                     timer_offset = millis();
-//                     offset_flag = false;
-//                 }
-//                 if(TTA-(millis()-timer_offset)<0){
-//                     pinMode(EJECTION_PIN,HIGH);
-//                     delay(5000);
-//                 }
-//                 if(flight_state>=APOGEE && flight_state<PARACHUTE_DESCENT) {
-//                     pinMode(EJECTION_PIN,HIGH);
-//                     delay(5000);
-//                 }
-//                 else pinMode(EJECTION_PIN,LOW);
-//             }
-
-//         }else{
-//             debugln("[-]Failed to receive altimeter data in state machine");
-//         }
-//         if(xQueueSend(flight_states_queue, &flight_state, portMAX_DELAY) != pdPASS) debugln("[-]Failed to update state");
-//     }
-// }
-
 void setup(){
     /* initialize serial */
     Serial.begin(115200);
 
     uint8_t app_id = xPortGetCoreID();
-    BaseType_t th;
-
-    /* Setup GPS*/
-    // hard.begin(9600, SERIAL_8N1, RX, TX);
+    BaseType_t th; // task creation handle
 
     /* initialize the data logging system - logs to flash memory */
     data_logger.loggerInit();
@@ -518,14 +480,11 @@ void setup(){
     BMPInit();
 
     //==============================================================
-    ;
-    // initialize_altimeter();
-    // todo: initialize flash memory
 
     // mqtt_client.setBufferSize(MQTT_BUFFER_SIZE);
     // mqtt_client.setServer(MQTT_SERVER, MQTT_PORT);
 
-    // debugln("Creating queues...");
+    debugln("==============Creating queues=============="); // TODO: LOG TO SYSTEM LOGGER
 
     ///////////////////// create data queues ////////////////////
     // this queue holds the data from MPU 6050 - this data is filtered already
@@ -534,40 +493,39 @@ void setup(){
     // this queue hold the data read from the BMP180
     altimeter_data_qHandle = xQueueCreate(ALTIMETER_QUEUE_LENGTH, sizeof(altimeter_type_t)); 
 
+    /* create gps_data_queue */   
+    gps_data_qHandle = xQueueCreate(GPS_QUEUE_LENGTH, sizeof(gps_type_t));
+
     // this queue holds the telemetry data packet
     telemetry_data_qHandle = xQueueCreate(TELEMETRY_DATA_QUEUE_LENGTH, sizeof(telemetry_packet));
-
-    // /* create altimeter_data_queue */   
-    // altimeter_data_queue = xQueueCreate(ALTIMETER_QUEUE_LENGTH, sizeof(struct Altimeter_Data));
-
-    // /* create gps_data_queue */   
-    // gps_data_queue = xQueueCreate(GPS_QUEUE_LENGTH, sizeof(struct GPS_Data));
-
-    // /* create queue to hols all the sensor's data */
-    // telemetry_data_queue = xQueueCreate(ALL_TELEMETRY_DATA_QUEUE_LENGTH, sizeof(struct Telemetry_Data));
 
     // /* this queue will hold the flight states */
     // flight_states_queue = xQueueCreate(FLIGHT_STATES_QUEUE_LENGTH, sizeof(int32_t));
 
-
     /* check if the queues were created successfully */
-    // if(accel_data_qHandle == NULL){
-    //     debugln("[-]accel data queue creation failed!");
-    // } else{
-    //     debugln("[+]accel data queue creation success");
-    // }
+    if(accel_data_qHandle == NULL){
+        debugln("[-]accel data queue creation failed!");
+    } else{
+        debugln("[+]Accelleration data queue creation success");
+    }
     
-    // if(altimeter_data_queue == NULL){
-    //     debugln("[-]Altimeter data queue creation failed!");
-    // } else{
-    //     debugln("[+]Altimeter data queue creation success");
-    // }
+    if(altimeter_data_qHandle == NULL){
+        debugln("[-]Altimeter data queue creation failed!");
+    } else{
+        debugln("[+]Altimeter data queue creation success");
+    }
 
-    // if(gps_data_queue == NULL){
-    //     debugln("[-]GPS data queue creation failed!");
-    // } else{
-    //     debugln("[+]GPS data queue creation success");
-    // }
+    if(gps_data_qHandle == NULL){
+        debugln("[-]GPS data queue creation failed!");
+    } else{
+        debugln("[+]GPS data queue creation success");
+    }
+
+    if(telemetry_data_qHandle == NULL) {
+        debugln("Telemetry queue created");
+    } else {
+        debugln("Failed to create telemetry queue");
+    }
 
     // if(filtered_data_queue == NULL){
     //     debugln("[-]Filtered data queue creation failed!");
@@ -587,7 +545,7 @@ void setup(){
      * ESP32 is 32 bit, therefore 32bits x 1024 = 4096 bytes
      * So the stack size is 4096 bytes
      * */
-    // debugln("Creating tasks...");
+    debugln("==============Creating tasks==============");
 
     /* TASK 1: READ ACCELERATION DATA */
    th = xTaskCreatePinnedToCore(
@@ -601,43 +559,46 @@ void setup(){
    );
 
    if(th == pdPASS) {
-    Serial.println("Task created");
+    Serial.println("Read acceleration task created");
    } else {
-    Serial.println("Task creation failed");
+    Serial.println("Read acceleration task creation failed");
    }
 
-   
-    /* TASK 1: READ ALTIMETER DATA */
-   if(xTaskCreate(
-           readAltimeter,               /* function that executes this task*/
+    /* TASK 2: READ ALTIMETER DATA */
+   th = xTaskCreatePinnedToCore(
+           readAltimeterTask,           /* function that executes this task*/
            "readAltimeter",             /* Function name - for debugging */
-           STACK_SIZE,                  /* Stack depth in words */
+           STACK_SIZE*2,                  /* Stack depth in words */
            NULL,                        /* parameter to be passed to the task */
            2,                           /* Task priority - in this case 1 */
-           NULL                         /* task handle that can be passed to other tasks to reference the task */
-   ) != pdPASS){
-    // if task creation is not successful
-    debugln("[-]Read-Altimeter task creation failed!");
+           NULL,                        /* task handle that can be passed to other tasks to reference the task */
+           app_id
+   );
 
-   }else{
-    debugln("[+]Read-Altimeter task creation success");
-   }
+    if(th == pdPASS) {
+        debugln("Read altimeter task created successfully");
+    } else {
+        debugln("Failed to create read altimeter task");
+    }
 
-   /* TASK 2: READ GPS DATA */
-    // if(xTaskCreate(
-    //           readGPS,         
-    //           "readGPS",
-    //           STACK_SIZE,                  
-    //           NULL,                       
-    //           2,
-    //           NULL
-    //     ) != pdPASS){
-    //     debugln("[-]Read-GPS task creation failed!");
-    // } else{
-    //     debugln("[+]Read-GPS task creation success!");
-    // }
+    /* TASK 3: READ GPS DATA */
+    th = xTaskCreatePinnedToCore(
+            readGPSTask,         
+            "readGPS",
+            STACK_SIZE*2,                  
+            NULL,                       
+            1,
+            NULL,
+            app_id
+        );
 
-    /* TASK 3: DISPLAY DATA ON SERIAL MONITOR - FOR DEBUGGING */
+    if(th == pdPASS) {
+        debugln("GPS task created");
+    } else {
+        debugln("Failed to create GPS task");
+    }
+
+    /* TASK 4: DISPLAY DATA ON SERIAL MONITOR - FOR DEBUGGING */
     // th = xTaskCreatePinnedToCore(
     //         debugToTerminal,
     //         "displayData",
@@ -670,18 +631,18 @@ void setup(){
     // }
 
     /* TASK 4: LOG DATA TO MEMORY */
-    if(xTaskCreate(
-            logToMemory,
-            "logToMemory",
-            STACK_SIZE,
-            NULL,
-            1,
-            NULL
-    ) != pdPASS){
-        debugln("[-]logToMemory task failed to create");
-    }else{
-        debugln("[+]logToMemory task created success");
-    }
+    // if(xTaskCreate(
+    //         logToMemory,
+    //         "logToMemory",
+    //         STACK_SIZE,
+    //         NULL,
+    //         1,
+    //         NULL
+    // ) != pdPASS){
+    //     debugln("[-]logToMemory task failed to create");
+    // }else{
+    //     debugln("[+]logToMemory task created success");
+    // }
 
     // if(xTaskCreate(
     //         flight_state_check,
