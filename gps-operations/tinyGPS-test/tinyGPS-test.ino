@@ -1,9 +1,13 @@
 #include <TinyGPSPlus.h>
 
-unsigned long previous_time, current_time = 0;
-uint16_t interval = 50; // GPS sample time
+void GPSInit();
+void dumpGPSData();
+
+unsigned long previous_time=0, current_time = 0;
+uint16_t interval = 1500; // GPS sample time
 
 TinyGPSPlus gps;
+bool newdata = false;
 
 typedef struct {
   double latitude;
@@ -13,14 +17,76 @@ typedef struct {
 
 gps_type_t gps_data;
 
-void readGPS() {
-  gps_data.latitude = gps.location.lat();
-  gps_data.longitude = gps.location.longitude();
-  gps_data.t = gps.time.value();
+void GPSInit() {
+  Serial.println("[+] Initializing GPS");
+  Serial2.begin(9600); // TODO: MOVE TO DEFS
+  delay(100); // wait for serial to init
+}
+
+void dumpGPSData() {
+  double lt, lon;
+  float flat, flon;
+  unsigned long ag, dt, tm, chars;
+  int yr;
+  byte mon, dy, hr, minut, sec, centisec;
+  unsigned short sentences, failed;
+  unsigned int alt;
+
+  // get location( lat and long)
+  if(gps.location.isValid()) {
+    Serial.println("Location:");
+    lt = gps.location.lat();
+    lon = gps.location.lng();
+    Serial.print("Lat/long: ");
+    Serial.print(lt);
+    Serial.print(", ");
+    Serial.println(lon);
+    
+  } else {
+    Serial.println("INVALID LOCATION"); // TODO: LOG TO SYSTEM LOGGER
+  }
+
+  // get time 
+  if(gps.time.isValid()) {
+    Serial.print("Time: ");
+    hr = gps.time.hour();
+    minut = gps.time.minute();
+    sec = gps.time.second();
+    centisec = gps.time.centisecond();
+
+    Serial.print(hr);Serial.print(":");Serial.print(minut);Serial.print(":");
+    Serial.print(sec); Serial.print(":"); Serial.println(centisec);
+    
+  } else {
+    Serial.println("INVALID TIME");
+  }
+
+  // get date 
+  if(gps.date.isValid()) {
+    Serial.print("Date: ");
+    dy = gps.date.day();
+    mon = gps.date.month();
+    yr = gps.date.year();
+
+    Serial.print(dy); Serial.print("/");Serial.print(mon);Serial.print("/"); Serial.println(yr); 
+       
+  } else {
+    Serial.println("INVALID DATE"); // TODO: LOG TO SYSTEM LOGGER
+  }
+
+  // get motion data
+  if(gps.altitude.isValid()) {
+    Serial.print("Altitude(m): ");
+    alt = gps.altitude.meters();
+
+    Serial.println(alt);
+  }  
+  
 }
 
 void setup() {
   Serial.begin(115200);
+  GPSInit();
   
 }
 
@@ -28,12 +94,23 @@ void loop() {
   current_time = millis();
   if(current_time - previous_time > interval) {
     previous_time = current_time;
-    readGPS();
 
-    // print the results 
-    Serial.print(F("LAT: ")); Serial.print(gps_data.latitude); 
-    Serial.print(F("LONG: ")); Serial.print(gps_data.longitude); 
-    Serial.print(F("TIME: ")); Serial.print(gps_data.t);
-  }  
+    if(Serial2.available()) {
+     char c = Serial2.read();
+     // Serial.print(c);
 
+      if(gps.encode(c)) {
+        newdata = true;
+      }
+     }
+
+    if(newdata) {
+      Serial.println("Acquired data");
+      Serial.println("---------------");
+      dumpGPSData();
+      Serial.println("---------------");
+      Serial.println();
+    }
+
+  }
 }

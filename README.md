@@ -159,7 +159,7 @@ If we use the [SparkFun_SPI_SerialFlashChip library](https://github.com/sparkfun
 
 The flash chip is working okay from the tests above. 
 
-Now, since we want to access the flash memory in a file-system kind of way, where we can read and write FILES, we use the SerialFlash Lib, even if the flash memory is not recognized by it. This will make it easier for us to access huge blocks of memory in chunks and avoid accessing the memory directly. In addition, we can erase files and use SD-like methods to access data.
+Now, since we want to access the flash memory in a file-system kind of way, where we can read and write FILES, we use the [SerialFlash Library](https://github.com/PaulStoffregen/SerialFlash), even if the flash memory is not recognized by it. This will make it easier for us to access huge blocks of memory in chunks and avoid accessing the memory directly. In addition, we can erase files and use SD-like methods to access data.
 
 The demonstration below received data from the serial monitor, and writes it to a file inside the flash memory. 
 
@@ -192,6 +192,26 @@ Use ```Nakuja Flight Data Recovery Tool``` to dump the recorded data as follows:
 
 
 
+
+### GPS Operations 
+
+GPS is used to give us accurate location in terms of longitude, latitude, time and altitude. This data is useful for post-flight recovery and for apogee detection and verification. However, because of the low sample rate of GPS modules (1 Hz), we cannot use it reliably to log altitude data since rocketry is high speed. 
+
+![gps](/images/GPS-MODULE.jfif)
+
+#### Reading GPS data algorithm 
+
+We read GPS data using the [TinyGPSPlus Library](https://github.com/mikalhart/TinyGPSPlus). The data of interest is the latitude, longitude, time and altitude. The algorithm is as follows:
+
+1. Create GPS data queue
+2. Create the ```readGPS``` task
+3. Inside the task, create a local ```gps_type_t``` variable to hold the sampled data
+4. Read the latitude, longitude, time and altitude into the ```gps_type_t``` variable
+5. Send this data to ```telemetry_queue```
+
+#### GPS tests
+
+The following screenshots show the results of GPS tests during development. In the image below, the raw GPS coordinates are read and printed on the serial debugger:
 
 
 
