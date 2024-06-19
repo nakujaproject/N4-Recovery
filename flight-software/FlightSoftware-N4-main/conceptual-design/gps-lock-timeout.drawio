@@ -1,0 +1,99 @@
+<mxfile host="Electron" modified="2024-06-16T13:01:33.767Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/23.1.5 Chrome/120.0.6099.109 Electron/28.1.0 Safari/537.36" etag="d1F589agg7O2VfvexX73" version="23.1.5" type="device">
+  <diagram name="Page-1" id="31bVrb871ln1G7emrZOh">
+    <mxGraphModel dx="3245" dy="963" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-9" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p60vrISp5pK5Xkwiz-xx-1" target="p60vrISp5pK5Xkwiz-xx-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-1" value="start" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="150" y="30" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-22" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p60vrISp5pK5Xkwiz-xx-2" target="p60vrISp5pK5Xkwiz-xx-20">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-2" value="timeout = 2000 // ms&lt;br&gt;gps_locked = 0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="130" y="160" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-12" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p60vrISp5pK5Xkwiz-xx-3" target="p60vrISp5pK5Xkwiz-xx-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-3" value="try decoding GPS data" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="130" y="460" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-13" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p60vrISp5pK5Xkwiz-xx-4" target="p60vrISp5pK5Xkwiz-xx-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p60vrISp5pK5Xkwiz-xx-4" target="p60vrISp5pK5Xkwiz-xx-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-4" value="is decoding successful?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="130" y="560" width="120" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-18" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p60vrISp5pK5Xkwiz-xx-5" target="p60vrISp5pK5Xkwiz-xx-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-5" value="gps_locked = 1&lt;br&gt;time = 0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="130" y="715" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p60vrISp5pK5Xkwiz-xx-6" target="p60vrISp5pK5Xkwiz-xx-20">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="390" y="265" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-6" value="time++" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#333333;strokeColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="340" y="585" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-11" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p60vrISp5pK5Xkwiz-xx-8" target="p60vrISp5pK5Xkwiz-xx-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-29" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p60vrISp5pK5Xkwiz-xx-8" target="p60vrISp5pK5Xkwiz-xx-28">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-8" value="time&amp;nbsp; &amp;gt; timeout ?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="130" y="300" width="120" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-15" value="N" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="275" y="588" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-16" value="Y" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="190" y="670" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-17" value="stop" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="150" y="830" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-19" value="N" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="190" y="420" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-21" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p60vrISp5pK5Xkwiz-xx-20" target="p60vrISp5pK5Xkwiz-xx-8">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-20" value="" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="175" y="250" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-31" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="p60vrISp5pK5Xkwiz-xx-24" target="p60vrISp5pK5Xkwiz-xx-17">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-40" y="870" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-24" value="MSG: failed to acquire GPS lock on time" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="-100" y="430" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-30" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="p60vrISp5pK5Xkwiz-xx-28" target="p60vrISp5pK5Xkwiz-xx-24">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-28" value="gps_locked = 0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="-100" y="325" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p60vrISp5pK5Xkwiz-xx-32" value="Y" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="70" y="325" width="30" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

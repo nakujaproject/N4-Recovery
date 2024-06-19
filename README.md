@@ -89,8 +89,9 @@ b) Transmit video stream to ground**
 
 | Data                  | Data type | Size (bytes) | Description                                              |
 | --------------------- | --------- | ------------ | -------------------------------------------------------- |
+| record_number         | uint32_t  | 4            | record number count                                      |
 | state                 | uint8_t   | 1            | current flight state                                     |
-| flight_mode           | uint8_t   | 1            | current flight mode, whether SAFE or ARMED               |
+| operation_mode        | uint8_t   | 1            | current flight mode, whether SAFE or ARMED               |
 | ax                    | float     | 4            | acceleration in the x-axis (m/s^2)                       |
 | ay                    | float     | 4            | acceleration in the y-axis (m/s^2)                       |
 | az                    | float     | 4            | acceleration in the z-axis (m/s^2)                       |
@@ -109,8 +110,9 @@ b) Transmit video stream to ground**
 | velocity              | float     | 4            | velocity derived from the altimeter                      |
 | pyro1_state           | uint8_t   | 1            | state of main chute pyro (whether ejected or active)     |
 | pyro2_state           | uint8_t   | 1            | state of drogue chute pyro (whether ejected or active)   |
+| battery_voltage       | uint8_t   | 1            | voltage of the battery during flight                     |
 |                       |           |              |                                                          |
-| **Total packet size** |           | **69 BYTES** |                                                          |
+| **Total packet size** |           | **74 BYTES** |                                                          |
 
 
 
@@ -135,6 +137,16 @@ Using this library [SerialFlashLib](https://github.com/PaulStoffregen/SerialFlas
 
 ![flash-cct](./images/flash-mem.png)
 
+
+
+#### PCB layout for the flash memory
+
+To ensure maximum reliability of the flash memory on the PCB, follow the following techniques during layout:
+
+
+
+
+
 The following snapshot from serial monitor shows that ESP32 was able to recognize the chip over the SPI channel.
 
 ![flash-test](./images/flash-test.png)
@@ -147,7 +159,7 @@ If we use the [SparkFun_SPI_SerialFlashChip library](https://github.com/sparkfun
 
 The flash chip is working okay from the tests above. 
 
-Now, since we want to access the flash memory in a file-system kind of way, where we can read and write FILES, we use the SerialFlash Lib, even if the flash memory is not recognized by it. This will make it easier for us to access huge blocks of memory in chunks and avoid accessing the memory directly. In addition, we can erase files and use SD-like methods to access data.
+Now, since we want to access the flash memory in a file-system kind of way, where we can read and write FILES, we use the [SerialFlash Library](https://github.com/PaulStoffregen/SerialFlash), even if the flash memory is not recognized by it. This will make it easier for us to access huge blocks of memory in chunks and avoid accessing the memory directly. In addition, we can erase files and use SD-like methods to access data.
 
 The demonstration below received data from the serial monitor, and writes it to a file inside the flash memory. 
 
@@ -169,89 +181,71 @@ Testing method
 1. I created a file 4KB in size and named it ```test.csv```. 
 2. Then generated dummy data using random() functions in Arduino. 
 3. I then appended this random data to the file, while checking the size being occupied by the file
-4. 
+4. Running the ```flash_read.ino``` file after data is done recording displays all the recorded data on the flash memory
 
 
-#### Encoding and space optimizations 
 
----
+#### How to recover the data 
 
-The aim of this optimization is to ensure we have as much memory as possible to store the flight data. To do this, we need to test how much in-memory space various data formats will take. This is explained below
+Use ```Nakuja Flight Data Recovery Tool``` to dump the recorded data as follows: 
 
-#### Encoding and storing integers and floats
 
-To carry out this comparison, I created two files. One with purely integer values and the other with the same integer values but in HEX format.
 
-```
-// decimal-test-file.log
-2245454
-2245454
-2245454
-34
-34
-34
-34
-34
-34
-34
 
-```
+The image below shows the response after I reduced the SPI speed: 
+![flash](./data-logging-and-memory-operations/file-ready.png)
 
-```
-// hex-test-file.log
-22434E
-22434E
-22434E
-22
-22
-22
-22
-22
-22
-22
+### GPS Operations 
 
-```
+GPS is used to give us accurate location in terms of longitude, latitude, time and altitude. This data is useful for post-flight recovery and for apogee detection and verification. However, because of the low sample rate of GPS modules (1 Hz), we cannot use it reliably to log altitude data since rocketry is high speed. 
 
-Saving and checking the properties of the two files in Windows platform shows the following: 
+![gps](/images/GPS-MODULE.jfif)
 
-For the decimal file, the size is 53 bytes
+#### Reading GPS data algorithm 
 
-![dec-test](./data-logging-and-memory-operations/dec-test.png)
+We read GPS data using the [TinyGPSPlus Library](https://github.com/mikalhart/TinyGPSPlus). The data of interest is the latitude, longitude, time and altitude. The algorithm is as follows:
 
-For the hexadecimal file, the size is 50 bytes
+1. Create GPS data queue
+2. Create the ```readGPS``` task
+3. Inside the task, create a local ```gps_type_t``` variable to hold the sampled data
+4. Read the latitude, longitude, time and altitude into the ```gps_type_t``` variable
+5. Send this data to ```telemetry_queue```
 
-![hex-test](./data-logging-and-memory-operations/hex-test.png)
+#### GPS  fix time issues
 
-The hexadecimal file is 3 bytes smaller as observed. 
+The start of GPS can be cold or warm. Cold start means the GPS is starting from scratch, no prior satellite data exists, and here it takes much time to lock satellites and download satellite data. Once you initially download satellite data, the following connections take less time, referred to as warm-starts.
 
-#### Encoding and storing strings
+When using GPS, you will find that the time it takes to acquire a fix to GPS satellites depends on the cloud cover. If the cloud cover is too high, it takes longer to acquire a signal and vice-versa. During one of the tests of the GPS, it took ~2 min at 45% cloud cover to acquire signal. 
 
-For strings, since we are not going to use any non-ASCII characters, we can store the string as is. This means that if we have a string like "flight data", it would take 12 bytes, since one char is 1 byte. In addition, the string metadata like length and nul terminator take some few extra bytes. 
+During launch, we do not want to wait for infinity to get a GPS lock, so we implement a timeout as follows:
 
-If we could encode this string into hex, using UTF-8 encoding scheme, it would take the same 12 bytes. 
-This test is carried out below to justify why we store the strings as is without encoding them. 
+```c
+Consider the GPS_WAIT_TIME as 2 minutes (2000ms):
 
-I wrote a program to convert a string to HEX format, and compared the following string:
-
-```
-flight data
+1. Initialize a timeout variable and a lock_acquired boolean value
+2. Check the value of the timeout_variable
+3. Is it less than the GPS_WAIT_TIME?
+4. If less than the wait time,  continue waiting for GPS fix, if more than the GPS_WAIT_TIME, stop waiting for fix and return false
+5. If the GPS data is available and successfully encoded via serial, set the lock_acquired booelan value to true
 ```
 
-In HEX format, it produces the following:
+This timeout will ensure we do not delay other sub-systems of the flight software from starting.
 
-```
-666C696768742064617461
-```
+##### Flowchart 
 
-Raw string size (Windows platform)
+![gps-flowchart](./images/gps-lock-flow.png)
 
-![raw-string](./data-logging-and-memory-operations/raw-string.png)
 
-Hex string size 
 
-![hex-string](./data-logging-and-memory-operations/dec-test.png)
+#### GPS tests
 
-The raw string occupies 11 bytes, while the same strinf in HEX format occupies a whooping 24 bytes! This is not feasible considering we will be storing several strings in a 4 MB limited flash memory over the flight time, which will certainly occupy lots of memory if we store HEX strings.
+The following screenshots show the results of GPS tests during development. In the image below, the raw GPS coordinates are read and printed on the serial debugger:
+
+![gps-data](./images/gps-test-altitude.png)
+
+
+
+
 
 
 

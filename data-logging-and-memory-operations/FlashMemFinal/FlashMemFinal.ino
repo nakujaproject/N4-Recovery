@@ -140,10 +140,11 @@ void checkForSerialCommand() {
       case 's':
       case 'S':
         Serial.println(F("START RECORDING"));
-        getNextFlashFilename();
+//        getNextFlashFilename();
         Serial.print( F("Writing to file: " ));
-        Serial.println(filename);
-        SerialFlash.create(filename, FILE_SIZE_512K);
+//        Serial.println(filename);
+//        SerialFlash.create(filename, FILE_SIZE_512K);
+        SerialFlash.create("flight1.bin", FILE_SIZE_512K);
         file = SerialFlash.open(filename);
         fakeTemperature = 12.0;
         fakePressure = 1013.25;
@@ -182,7 +183,10 @@ void showMenu() {
 void dumpOneRecording() {
   Serial.println(F("\nDUMP ONE RECORDING"));
 
-  sprintf( filename, "flt%02d.bin", dumpFileNumber );
+//  sprintf( filename, "flt%02d.bin", dumpFileNumber );
+//  file = SerialFlash.open( filename );
+
+  sprintf( filename, "flight.bin");
   file = SerialFlash.open( filename );
 
   if (file) {
