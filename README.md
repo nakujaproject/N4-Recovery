@@ -192,6 +192,8 @@ Use ```Nakuja Flight Data Recovery Tool``` to dump the recorded data as follows:
 
 
 
+The image below shows the response after I reduced the SPI speed: 
+![flash](./data-logging-and-memory-operations/file-ready.png)
 
 ### GPS Operations 
 

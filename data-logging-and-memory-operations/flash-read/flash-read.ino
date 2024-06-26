@@ -4,6 +4,9 @@
  */
 
 #include <SerialFlash.h>
+
+const byte PIN_FLASH_CS = 5; // Change this to match the Chip Select pin on your board
+SerialFlashFile file;
 #include "data-types.h"
 
 const byte PIN_FLASH_CS = 5; // Change this to match the Chip Select pin on your board
