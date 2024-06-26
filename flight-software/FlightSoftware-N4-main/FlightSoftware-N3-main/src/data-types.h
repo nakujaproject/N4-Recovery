@@ -24,7 +24,8 @@ typedef struct Gyroscope_Data {
 
 typedef struct GPS_Data{
     double latitude;
-    double longitude;; 
+    double longitude;
+    uint16_t gps_altitude;
     uint time;
 } gps_type_t;
 

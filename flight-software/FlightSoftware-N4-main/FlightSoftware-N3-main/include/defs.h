@@ -1,11 +1,14 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+#define GPS_BAUD_RATE 9600
+
 /* debug parameters for use during testing - set to 0 for production */
 #define DEBUG 1
+#define LOG_TO_MEMORY 0 // set to 1 during live testing
+#define DEBUG_TO_TERMINAL 1 // set to 0 for production
 
-#if DEBUG
-
+#if DEBUG // DEBUG
 #define debug(x) Serial.print(x)
 #define debugln(x) Serial.println(x)
 #define debugf(x, y) Serial.printf(x, y)
@@ -15,8 +18,7 @@
 #define debug(x)
 #define debugln(x)
 #define debugf(x, y)
-
-#endif
+#endif // DEBUG
 
 /* end of debug parameters */
 
@@ -54,7 +56,7 @@
 #define BALLISTIC_DESCENT   4
 #define PARACHUTE_DESCENT   5
 #define POST_FLIGHT         6
-#define UNDEFINED_STATE         7
+#define UNDEFINED_STATE     7
 
 #define EJECTION_PIN 12
 /* LEDs for testing - remove on production */
@@ -63,7 +65,8 @@
 // number of readings to take while callibrating the sensor
 #define CALLIBRATION_READINGS   200
 
-
-#endif
 #define TX 17
 #define RX 16
+
+#endif // DEFS_H
+

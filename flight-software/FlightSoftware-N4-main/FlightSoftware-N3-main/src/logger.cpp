@@ -5,7 +5,6 @@
 #include "logger.h"
 #include "data-types.h"
 
-
 telemetry_type_t t;
 char pckt_buff[50];
 
@@ -95,7 +94,7 @@ bool DataLogger::loggerInit() {
 
         } else {
             Serial.println(F("File system found"));
-            Serial.println(F("Files currently in flash:"));
+            Serial.println(F("Files currently in flash:")); // TODO: LOG TO SYSTEM LOGGER
             SerialFlash.opendir();
 
             while (1) {
@@ -155,7 +154,6 @@ bool DataLogger::loggerTest() {
  * @param data this is a struct pointer to the struct that contains the data that needs to 
  * be written to the memory
  * 
- * in this function, we write the data structs to the file as comma separated values
  * 
 */
 void DataLogger::loggerWrite(telemetry_type_t packet){
@@ -173,6 +171,7 @@ void DataLogger::loggerWrite(telemetry_type_t packet){
             packet.acc_data.roll,
             packet.alt_data.pressure);
 
+    // write the packet to memory
     this->_file.write((uint8_t*)&packet, sizeof(packet));
 
     Serial.print( packet.record_number );
@@ -266,3 +265,5 @@ void DataLogger::loggerEquals() {
     }
     Serial.println();
 }
+
+
