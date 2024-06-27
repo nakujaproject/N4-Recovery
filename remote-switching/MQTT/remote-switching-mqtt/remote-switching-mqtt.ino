@@ -65,15 +65,10 @@ void parseMQTTCommand(String command) {
 
     // check whether we have armed successfully
     if (checkArmingStatus()) {
-      Serial.println("[ACK] ARMED");
+      Serial.println("[ACK]PIN HIGH. ARMED");
     } else {
-      // since we are certain that the ARM command is sent, try arming again after arming_interval
-      Serial.println("[ACK] FAILED ARMING");
-//      current_arming_retry_time = millis();
-//      if( (current_arming_retry_time - last_arming_retry_time) > arming_interval) {
-//        digitalWrite(ARMING_PIN, HIGH);
-//      }
-      
+      // TODO: since we are certain that the ARM command is sent, try arming again after arming_interval
+      Serial.println("[ACK]PIN LOW. FAILED ARMING");      
     }
     
   } else if (command == "\"DISARM\"") {
@@ -142,10 +137,11 @@ void reconnect() {
 
 void loop() {
   // if client loses connection, try reconnecting
-  if(!client.connected() ){
+  if (!client.connected()) {
     reconnect();
   }
   client.loop();
+  
 }
 
 /**
@@ -155,7 +151,8 @@ void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message arrived on topic: ");
   Serial.println(topic);
   String command;
-  
+
+  // receive the message from MQTT
   for (int i=0; i<length; i++) {
     command += (char) payload[i]; 
   }
