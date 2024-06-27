@@ -5,6 +5,7 @@ This folder contains code for remote switching using MQTT and using XBee HP 900M
 
 ### Flowchart 
 
+![flowchart](./images/remote_switching_flowchart.png)
 
 ### With MQTT
 To perform remote switching with MQTT. The following procedure is used. This assumes you are using an ESP32 board. 
@@ -27,4 +28,8 @@ By following these steps, you will successfully install the PubSubClient library
 1. Open the ```remote-switching-mqtt``` folder and locate the ```remote-switching-mqtt``` sketch. 
 2. Open the ```defs.h```, and change the credentials in the ```defs.h```. Namely wifi_ssid, wifi_password, and MQTT credentials you are using, namely MQTT_BROKER, topic, mqtt_username, mqtt_password, and mqtt_port. Change them accordingly. Foe instance the mqtt broker will be the IP_ADDRESS of the machine running the MQTT broker.
 
+![parameters](./images/parameters.png)
+
 2. Connect your ESP32 board and upload the code. 
+
+

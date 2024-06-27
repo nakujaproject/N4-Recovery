@@ -5,6 +5,7 @@ This folder contains code for remote switching using MQTT and using XBee HP 900M
 
 ### Flowchart 
 
+![flowchart](./images/remote_switching_flowchart.png)
 
 ### With MQTT
 To perform remote switching with MQTT. The following procedure is used. This assumes you are using an ESP32 board. 
