@@ -1,0 +1,10 @@
+## Remote switching 
+---
+### Introduction
+This folder contains code for remote switching using MQTT and using XBee HP 900MHz modules. Remote switching will enable remote arming of the avionics when and only when they are safely secure on the launch pad, so that any misfires are avoided and safety of the launch crew is guaranteed. 
+
+### Flowchart 
+
+
+### With MQTT
+To perform remote switching with MQTT. The following procedure is used. This assumes you are using an ESP32 board. 
