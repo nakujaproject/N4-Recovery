@@ -23,7 +23,12 @@ const int mqtt_port = 1883;
 WiFiClient espClient;
 PubSubClient client(espClient);
 
+// arming variables 
 #define ARMING_PIN 13
+uint8_t arming_status = 0;
+unsigned long last_arming_retry_time = 0; 
+unsigned long current_arming_retry_time = 0;
+uint16_t arming_interval = 1000;
 
 /** 
  * implements remote switching for the avionics 
@@ -35,8 +40,16 @@ void armAvionics(){
 /**
  * measures the voltage on the ARMING_PIN  
  */
-void checkArming(){
+uint8_t checkArmingStatus(){
+  arming_status = digitalRead(ARMING_PIN);
   
+  if(arming_status == 1) {
+    // the rocket has been armed 
+    return 1;
+  } else {
+    // avionics not armed
+    return 0;
+  }
 }
 
 /**
@@ -49,6 +62,20 @@ void parseMQTTCommand(String command) {
   if(command == "\"ARM\"") {
     Serial.println("Rocket armed");
     digitalWrite(ARMING_PIN, HIGH);
+
+    // check whether we have armed successfully
+    if (checkArmingStatus()) {
+      Serial.println("[ACK] ARMED");
+    } else {
+      // since we are certain that the ARM command is sent, try arming again after arming_interval
+      Serial.println("[ACK] FAILED ARMING");
+//      current_arming_retry_time = millis();
+//      if( (current_arming_retry_time - last_arming_retry_time) > arming_interval) {
+//        digitalWrite(ARMING_PIN, HIGH);
+//      }
+      
+    }
+    
   } else if (command == "\"DISARM\"") {
     Serial.println("Rocket disarmed");
     digitalWrite(ARMING_PIN, LOW);
@@ -86,19 +113,38 @@ void setup() {
   }
 
   // publish and subscribe
-//  client.publish(topic, "Hi, I'm ESP32");
+  client.publish(topic, "[HELLO FROM ROCKET]");
   client.subscribe(topic);
 
   // set up the avionics arming pin
   pinMode(ARMING_PIN, OUTPUT); 
 
-  String name = "ESP";
-  if(name == "ESP") {
-    Serial.println("Name is ESP");
+}
+
+/**
+ * 
+ * Try reconnecting to MQTT if connection is lost
+ * 
+ */
+void reconnect() {
+  while(!client.connected()) {
+    Serial.println("[reconnecting]");
+    
+    if (client.connect("flight-computer")) {
+      Serial.println("[client reconnected]");
+      // subscribe
+      client.subscribe(topic);
+    } else {
+      Serial.println("[failed connecting]"); // TODO: log to system logger
+    }
   }
 }
 
 void loop() {
+  // if client loses connection, try reconnecting
+  if(!client.connected() ){
+    reconnect();
+  }
   client.loop();
 }
 
@@ -114,6 +160,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
     command += (char) payload[i]; 
   }
 
+  // parse the received command
   parseMQTTCommand(command);
   
   Serial.println("---------------------------------------");
