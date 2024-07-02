@@ -1,7 +1,12 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+// to select the telemetry transfer method used 
+#define MQTT 1 // set this to 1 if using MQTT for telemetry transfer
+#define XBEE 1  // set to 1 if using XBEE for telemetry transfer
+
 #define GPS_BAUD_RATE 9600
+#define XBEE_BAUD_RATE  // TODO: set to XBEE baud rate
 
 /* debug parameters for use during testing - set to 0 for production */
 #define DEBUG 1
