@@ -1,7 +1,13 @@
+
+
 # N4-Recovery
 RND for N4 recovery team
 
 ## N4 Flight Software Documentation
+![Static Badge](https://img.shields.io/badge/Version-N4-blue)
+![Static Badge](https://img.shields.io/badge/License-MIT-red)
+![Static Badge](https://img.shields.io/badge/Status-development-orange)
+
 
 ### N4 Flight software requirements 
 
