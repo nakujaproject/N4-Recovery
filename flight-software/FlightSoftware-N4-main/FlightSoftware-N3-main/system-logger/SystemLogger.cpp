@@ -5,13 +5,13 @@
  * @brief convert the log level to string
  * 
  */
-char* SystemLogger::getLogLevelString(uint8_t log_level) {
-    static char* debug = "DEBUG";
-    static char* info = "INFO";
-    static char* warning = "WARNING";
-    static char* critical = "CRITICAL";
-    static char* error = "ERROR";
-    static char* unknown = "UNKNOWN";
+const char* SystemLogger::getLogLevelString(uint8_t log_level) {
+    static const char* debug = "DEBUG";
+    static const char* info = "INFO";
+    static const char* warning = "WARNING";
+    static const char* critical = "CRITICAL";
+    static const char* error = "ERROR";
+    static const char* unknown = "UNKNOWN";
 
     switch (log_level) {
     case 0:
