@@ -1,0 +1,19 @@
+.pio
+CMakeListsPrivate.txt
+CMakeLists*.txt
+cmake-build-*/
+.idea
+.vscode
+
+# Libraries
+*.a
+*.lib
+*.so
+*.dll
+
+# Executables
+*.exe
+*.out
+*.app
+*.bin
+*.elf
