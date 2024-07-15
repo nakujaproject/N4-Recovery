@@ -11,27 +11,15 @@
 #include <PubSubClient.h> // TODO: ADD A MQTT SWITCH - TO USE MQTT OR NOT
 #include "sensors.h"
 #include "defs.h"
-#include "state_machine.h"
 #include "mpu.h"
 #include <SFE_BMP180.h>
 #include "SerialFlash.h"
 #include "logger.h"
 #include "data-types.h"
+#include "custom-time.h"
 #include <TinyGPSPlus.h>
 
-/**
- * DEBUG 
- * debug functions
- * 1. display_data()
- * 
- */
-
-/**
- * Flight modes
- * 0 - SAFE mode
- * 1 - ARMED mode
-*/
-uint8_t operation_mode = 0;
+uint8_t operation_mode = 0;     /*!< Tells whether software is in safe or flight mode - FLIGHT_MODE=1, SAFE_MODE=0 */
 
 /* create Wi-Fi Client */
 WiFiClient wifi_client;
@@ -43,21 +31,22 @@ PubSubClient mqtt_client(wifi_client);
 TinyGPSPlus gps;
 
 /* Flight data logging */
-uint8_t cs_pin = 5;
-uint8_t flash_led_pin = 4;
-char filename[] = "flight.bin";    // Filename must be less than 20 chars, including the file extension
-uint32_t FILE_SIZE_512K = 524288L;  // 512KB
-uint32_t FILE_SIZE_1M  = 1048576L;  // 1MB
-uint32_t FILE_SIZE_4M  = 4194304L;  // 4MB
-SerialFlashFile file;
-unsigned long long previous_log_time = 0, current_log_time = 0;
-uint16_t log_sample_interval = 10; // log data to flash every 10 ms
+uint8_t cs_pin = 5;                         /*!< External flash memory chip select pin */
+uint8_t flash_led_pin = 4;                  /*!< LED pin connected to indicate flash memory formatting  */
+char filename[] = "flight.bin";             /*!< data log filename - Filename must be less than 20 chars, including the file extension */
+uint32_t FILE_SIZE_512K = 524288L;          /*!< 512KB */
+uint32_t FILE_SIZE_1M  = 1048576L;          /*!< 1MB */
+uint32_t FILE_SIZE_4M  = 4194304L;          /*!< 4MB */
+SerialFlashFile file;                       /*!< object representing file object for flash memory */
+unsigned long long previous_log_time = 0;   /*!< The last time we logged data to memory */
+unsigned long long current_log_time = 0;    /*!< What is the processor time right now? */
+uint16_t log_sample_interval = 10;          /*!< After how long should we sample and log data to flash memory? */
+
 DataLogger data_logger(cs_pin, flash_led_pin, filename, file,  FILE_SIZE_4M);
 
 /* position integration variables */
 long long current_time = 0;
 long long previous_time = 0;
-
 
 /**
  * ///////////////////////// DATA VARIABLES /////////////////////////
@@ -89,7 +78,11 @@ char status;
 double T, P, p0, a;
 #define ALTITUDE 1525.0 // altitude of iPIC building, JKUAT, Juja.
 
-// initialize the BMP180 altimeter
+/*!****************************************************************************
+ * @brief Initialize BMP180 barometric sensor
+ * @return TODO: 1 if init OK, 0 otherwise
+ * 
+ *******************************************************************************/
 void BMPInit() {
     if(altimeter.begin()) {
         Serial.println("BMP init success");
@@ -99,10 +92,12 @@ void BMPInit() {
     }
 }
 
-/**
- * @initialize the GPS 
+
+/*!****************************************************************************
+ * @brief Initialize the GPS connected on Serial2
+ * @return 1 if init OK, 0 otherwise
  * 
- */
+ *******************************************************************************/
 void GPSInit() {
     // create the GPS object 
     debugln("Initializing the GPS..."); // TODO: log to system logger
@@ -153,6 +148,15 @@ QueueHandle_t gps_data_qHandle;
 // }
 
 //////////////////////////// ACCELERATION AND ROCKET ATTITUDE DETERMINATION /////////////////
+
+/*!****************************************************************************
+ * @brief Read aceleration data from the accelerometer
+ * @param pvParameters - A value that is passed as the paramater to the created task.
+ * If pvParameters is set to the address of a variable then the variable must still exist when the created task executes - 
+ * so it is not valid to pass the address of a stack variable.
+ * @return Updates accelerometer data struct on the telemetry queue
+ * 
+ *******************************************************************************/
 void readAccelerationTask(void* pvParameter) {
 
     telemetry_type_t acc_data_lcl;
@@ -178,6 +182,13 @@ void readAccelerationTask(void* pvParameter) {
 
 ///////////////////////// ALTITUDE AND VELOCITY DETERMINATION /////////////////////////
 
+/*!****************************************************************************
+ * @brief Read ar pressure data from the barometric sensor onboard
+ * @param pvParameters - A value that is passed as the paramater to the created task.
+ * If pvParameters is set to the address of a variable then the variable must still exist when the created task executes - 
+ * so it is not valid to pass the address of a stack variable.
+ * @return Sends altimeter data to altimeter queue
+ *******************************************************************************/
 void readAltimeterTask(void* pvParameters){
     telemetry_type_t alt_data_lcl;
 
@@ -273,11 +284,13 @@ void readAltimeterTask(void* pvParameters){
 
 }
 
-/**
+/*!****************************************************************************
+ * @brief Read the GPS location data and altitude and append to telemetry packet for transmission
+ * @param pvParameters - A value that is passed as the paramater to the created task.
+ * If pvParameters is set to the address of a variable then the variable must still exist when the created task executes - 
+ * so it is not valid to pass the address of a stack variable.
  * 
- * Read the GPS location data and altitude and append to telemetry packet for transmission
- * 
-*/
+ *******************************************************************************/
 void readGPSTask(void* pvParameters){
 
     telemetry_type_t gps_data_lcl;
@@ -331,10 +344,14 @@ void readGPSTask(void* pvParameters){
 
 }
 
-/**
- * @brief debug data to terminal 
- * @return none
- */
+
+/*!****************************************************************************
+ * @brief debug flight/test data to terminal, this task is called if the DEBUG_TO_TERMINAL is set to 1 (see defs.h)
+ * @param pvParameter - A value that is passed as the paramater to the created task.
+ * If pvParameter is set to the address of a variable then the variable must still exist when the created task executes - 
+ * so it is not valid to pass the address of a stack variable.
+ * 
+ *******************************************************************************/
 void debugToTerminalTask(void* pvParameters){
     telemetry_type_t rcvd_data; // accelration received from acceleration_queue
 
@@ -383,10 +400,14 @@ void debugToTerminalTask(void* pvParameters){
     }
 }
 
-/**
- * Task to log the data to flash memory
+
+/*!****************************************************************************
+ * @brief log the data to the external flash memory
+ * @param pvParameter - A value that is passed as the paramater to the created task.
+ * If pvParameter is set to the address of a variable then the variable must still exist when the created task executes - 
+ * so it is not valid to pass the address of a stack variable.
  * 
-*/
+ *******************************************************************************/
 void logToMemory(void* pvParameter) {
     telemetry_type_t received_packet;
 
@@ -507,6 +528,11 @@ void logToMemory(void* pvParameter) {
 // }
 
 
+/*!****************************************************************************
+ * @brief Setup - perfom initialization of all hardware subsystems, create queues, create queue handles 
+ * initialize system check table
+ * 
+ *******************************************************************************/
 void setup(){
     /* initialize serial */
     Serial.begin(115200);
@@ -710,6 +736,10 @@ void setup(){
 
 }
 
+
+/*!****************************************************************************
+ * @brief Main loop
+ *******************************************************************************/
 void loop(){
 //     if(WiFi.status() != WL_CONNECTED){
 //         WiFi.begin(SSID, PASSWORD);
