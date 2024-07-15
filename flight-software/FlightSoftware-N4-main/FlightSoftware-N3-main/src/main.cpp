@@ -1,4 +1,10 @@
 /**
+ * @file main.cpp
+ * @author Edwin Mwiti
+ * @version 0.1
+ * @date July 15 2024
+ * 
+ * @brief This contains the main driver code for the flight computer
  * 
  * 0x5765206D6179206D616B65206F757220706C616E73202C
  * 0x62757420476F642068617320746865206C61737420776F7264
