@@ -122,6 +122,6 @@ void loop() {
         Serial.println("error starting temperature measurement\n");
     }
 
-    delay(2000);
+    //delay(2000);
 
 }

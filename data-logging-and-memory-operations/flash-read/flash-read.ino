@@ -4,26 +4,27 @@
  */
 
 #include <SerialFlash.h>
-
-const byte PIN_FLASH_CS = 5; // Change this to match the Chip Select pin on your board
-SerialFlashFile file;
 #include "data-types.h"
 
+#define BAUDRATE 115200
+
 const byte PIN_FLASH_CS = 5; // Change this to match the Chip Select pin on your board
 SerialFlashFile file;
+char filename[] = "flight.txt";
+
 uint8_t dumpFileNumber = 1;
 
 // telemetry packet
 telemetry_type_t oneRecord;
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(BAUDRATE);
   if(!SerialFlash.begin(PIN_FLASH_CS)) {
     Serial.println(F("Flash not found! Check wiring."));
+  } else {
+    Serial.println(F("Flash memory found!"));
   }
-
-  Serial.println(F("Flash memory found!"));
-
+  
   showMenu();
   
 }
@@ -50,6 +51,11 @@ void checkForSerialCommand() {
         showMenu();
         break;
 
+       case 'l':
+        listFiles();
+        showMenu();
+        break;
+
       default:
         showMenu();
         break;
@@ -60,21 +66,49 @@ void checkForSerialCommand() {
 void showMenu() {
   Serial.println(F("\n===================== Nakuja Project post-flight data recovery ==================="));
   Serial.println(F("\nMENU OPTIONS:"));
+  Serial.println(F("l : List all files"));
   Serial.println(F("d : Dump data"));
+}
+
+void listFiles() {
+  delay(100);
+  Serial.println(F("All Files on SPI Flash chip:"));
+
+  SerialFlash.opendir();
+  while (1) {
+    char filename[64];
+    uint32_t filesize;
+
+    if (SerialFlash.readdir(filename, sizeof(filename), filesize)) {
+      Serial.print(F("  "));
+      Serial.print(filename);
+      spaces(20 - strlen(filename));
+      Serial.print(F("  "));
+      Serial.print(filesize);
+      Serial.print(F(" bytes"));
+      Serial.println();
+    } else {
+      break; // no more files
+    }
+  }
+}
+
+void spaces(int num) {
+  for (int i=0; i < num; i++) {
+    Serial.print(' ');
+  }
 }
 
 // generate a CSV formatted output of one flight's worth of recordings
 void dumpOneRecording() {
   Serial.println(F("\n================ Flight data ================"));
-  file = SerialFlash.open( "flight1.bin" );
-//  file = SerialFlash.open( "flight.bin" );
+  file = SerialFlash.open(filename);
 
   Serial.print(F("Files Found: ")); Serial.println(file);
 
   if (file) {
     Serial.print( F("Contents of file: ") );
-    Serial.println( F("flight1.bin" ));
-//    Serial.println( F("flight.bin" ));
+    Serial.println(filename);
     
     // print out the headings
     Serial.println(F("record_number,operation_mode,state,ax,ay,az,pitch,roll,gx,gy,gz,alt,velocity,pressure,temp"));
